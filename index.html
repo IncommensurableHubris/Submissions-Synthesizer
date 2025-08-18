@@ -1,0 +1,2911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submissions Synthesizer MVP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .platform-selection {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e3a8a;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        .platform-options {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .platform-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .platform-option:hover {
+            color: #3b82f6;
+        }
+
+        .platform-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #3b82f6;
+        }
+
+        .platform-option label {
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .input-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .input-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .large-textarea {
+            min-height: 200px;
+        }
+
+        .character-counter {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+
+        .character-counter.warning {
+            color: #f59e0b;
+        }
+
+        .character-counter.error {
+            color: #ef4444;
+        }
+
+        .file-upload-section {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .file-upload-section:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+
+        .file-upload-section.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .template-tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .template-tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .template-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        .template-content {
+            display: none;
+        }
+
+        .template-content.active {
+            display: block;
+        }
+
+        .generate-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 200px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .generate-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .output-section {
+            background: white;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .output-section.show {
+            display: block;
+        }
+
+        .output-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .output-tab {
+            padding: 0.75rem 1.5rem;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .output-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .prompt-output {
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1.5rem;
+            background: #f9fafb;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .copy-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #5b5cf6;
+        }
+
+        .copy-btn.copied {
+            background: #10b981;
+        }
+
+        .validation-warnings {
+            background: #fef3cd;
+            border: 1px solid #fbbf24;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .validation-warnings.show {
+            display: block;
+        }
+
+        .warning-item {
+            color: #92400e;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .help-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #6b7280;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8rem;
+            cursor: help;
+            margin-left: 0.5rem;
+        }
+
+        .input-description.success {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .input-description.error {
+            color: #dc2626;
+            font-weight: 500;
+        }
+
+        .input-description.warning {
+            color: #d97706;
+            font-weight: 500;
+        }
+
+        .input-description.processing {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .privacy-notice {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .privacy-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .privacy-text h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .privacy-text p {
+            margin: 0;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: #1f2937;
+            color: white;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+        }
+
+        .privacy-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .session-controls {
+            background: white;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .session-btn:hover {
+            background: #4b5563;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Quality assurance indicators */
+        .quality-indicator {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #10b981;
+        }
+
+        .quality-score {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .score-bar {
+            width: 100px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Status indicators and feedback styles */
+        .section-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-complete {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-required {
+            background: #fef3cd;
+            color: #92400e;
+        }
+
+        .status-progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .template-status-bar {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border-left: 4px solid #d1d5db;
+            transition: all 0.3s ease;
+        }
+
+        .template-status-bar.active {
+            background: #f0fdf4;
+            border-left-color: #16a34a;
+        }
+
+        .template-status-text {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .template-status-bar.active .template-status-text {
+            color: #16a34a;
+            font-weight: 500;
+        }
+
+        .success-notification {
+            background: #dcfce7;
+            border: 1px solid #16a34a;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            color: #166534;
+            font-size: 0.85rem;
+            display: none;
+            animation: slideInFadeOut 3s ease-in-out;
+        }
+
+        @keyframes slideInFadeOut {
+            0% { opacity: 0; transform: translateY(-10px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: #6b7280;
+            text-align: center;
+            margin-top: 0.25rem;
+        }
+
+        .auto-save-indicator {
+            font-size: 0.75rem;
+            color: #10b981;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            margin-top: 0.25rem;
+        }
+
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+
+        .input-feedback {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
+        .template-active-indicator {
+            background: #dcfce7;
+            border: 1px solid #16a34a;
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .template-active-indicator.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .template-source-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .validation-positive {
+            background: #dcfce7;
+            border: 1px solid #16a34a;
+            border-radius: 4px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .validation-positive.show {
+            display: block;
+        }
+
+        .validation-positive .validation-item {
+            color: #166534;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .validation-positive .validation-item:before {
+            content: "✓ ";
+            font-weight: bold;
+            color: #16a34a;
+        }
+
+        .form-completion-header {
+            background: white;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced mobile responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .platform-options {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .output-tabs {
+                flex-direction: column;
+            }
+
+            .session-controls {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .input-section, .platform-selection, .position-selection, .generate-section, .output-section {
+                padding: 1rem;
+            }
+
+            .prompt-output {
+                font-size: 0.8rem;
+                max-height: 300px;
+            }
+
+            #comparisonOutput > div {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .tooltip-text {
+                width: 250px;
+                margin-left: -125px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .generate-btn {
+                width: 100%;
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+
+            .session-btn {
+                width: 100%;
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Submissions Synthesizer</h1>
+            <p class="subtitle">From outline to eloquence: it's your arguments - just AI-augmented into complete submissions</p>
+        </header>
+
+        <div class="privacy-notice">
+            <div class="privacy-icon">🔒</div>
+            <div class="privacy-text">
+                <h3>100% Private & Secure</h3>
+                <p>This application runs entirely in your browser with no internet connection required. All document processing happens locally on your device. Your legal documents and data never leave your computer and are never transmitted to any external servers.</p>
+            </div>
+        </div>
+
+        <div class="session-controls">
+            <div>
+                <button class="session-btn" id="loadSession">Load Session File</button>
+                <input type="file" id="sessionFileInput" accept=".json" style="display: none;">
+                <button class="session-btn" id="saveSession">Export Session File</button>
+            </div>
+            <div>
+                <span class="privacy-badge tooltip">🛡️ Privacy Guaranteed
+                    <span class="tooltip-text">
+                        <strong>Complete Privacy Assurance:</strong><br>
+                        • All data processing happens locally in your browser<br>
+                        • No external servers or APIs are contacted<br>
+                        • Your documents and data never leave your device<br>
+                        • Session data stored only in your browser or exported as files you control<br>
+                        • No tracking, analytics, or telemetry of any kind<br>
+                        • Works completely offline after initial page load<br>
+                        • All libraries are loaded locally (no CDN dependencies)
+                    </span>
+                </span>
+                <button class="session-btn" id="clearAll">Clear All Fields</button>
+            </div>
+        </div>
+
+        <div class="form-completion-header">
+            <div class="progress-bar">
+                <div class="progress-fill" id="overallProgress"></div>
+            </div>
+            <div class="progress-text" id="progressText">Form completion: 0% (0 of 6 required sections)</div>
+        </div>
+
+        <div class="validation-positive" id="validationPositive">
+            <!-- Positive validation messages will appear here -->
+        </div>
+
+        <div class="platform-selection">
+            <h2 class="section-title">AI Platform Selection</h2>
+            
+            <div style="background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #92400e; font-size: 1rem;">ℹ️ Browser Interface Note</h3>
+                <p style="margin: 0; color: #92400e; font-size: 0.9rem; line-height: 1.4;">
+                    These prompts are optimized for browser-based chat interfaces (claude.ai and gemini.google.com). 
+                    Advanced settings like temperature and top-p are not user-controllable in these interfaces, 
+                    so the prompts include specific instructions to achieve desired response styles.
+                </p>
+            </div>
+            
+            <div class="platform-options">
+                <div class="platform-option">
+                    <input type="radio" id="claude" name="platform" value="claude" checked>
+                    <label for="claude">Claude Sonnet 4.0</label>
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">Optimized for sophisticated legal reasoning and nuanced analysis. Use at claude.ai - supports up to 64K output tokens. Best for complex cases requiring deep analytical capabilities and chain-of-thought reasoning.</span>
+                    </span>
+                </div>
+                <div class="platform-option">
+                    <input type="radio" id="gemini" name="platform" value="gemini">
+                    <label for="gemini">Gemini 2.5 Pro</label>
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">Optimized for systematic execution and methodical document processing. Use at gemini.google.com - features thinking mode capabilities and 2M context window. Excellent for structured legal submissions and phase-based analysis.</span>
+                    </span>
+                </div>
+                <div class="platform-option">
+                    <input type="radio" id="both" name="platform" value="both">
+                    <label for="both">Show Both</label>
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">Compare Claude Sonnet 4.0 and Gemini 2.5 Pro optimized prompts side by side. Both prompts are designed for browser chat interfaces and include different reasoning approaches for maximum flexibility.</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="position-selection">
+            <h2 class="section-title">Your Position in This Matter</h2>
+            
+            <div class="position-critical">
+                <h3>🎯 Critical: This determines your entire persuasive strategy</h3>
+                <p>
+                    Select your position to ensure the AI synthesizes arguments toward the correct goal.
+                    This affects how all context is interpreted and how arguments are developed.
+                </p>
+            </div>
+            
+            <div class="platform-options">
+                <div class="platform-option">
+                    <input type="radio" id="applicant" name="position" value="applicant" checked>
+                    <label for="applicant">Applicant/Plaintiff</label>
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">You are seeking relief from the court. Your arguments must persuasively establish why the court SHOULD grant the prayers/relief sought in your Summons/Application.</span>
+                    </span>
+                </div>
+                <div class="platform-option">
+                    <input type="radio" id="respondent" name="position" value="respondent">
+                    <label for="respondent">Respondent/Defendant</label>
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">You are opposing the relief sought. Your arguments must persuasively establish why the court SHOULD DENY the prayers/relief sought in the opponent's Summons/Application.</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h2 class="section-title">Case Information Input</h2>
+            
+            <div class="input-group">
+                <label for="chronology" class="input-label">
+                    Chronology <span class="required">*</span>
+                    <span class="section-status" id="chronologyStatus">
+                        <span class="status-indicator status-required">Required</span>
+                    </span>
+                </label>
+                <div class="input-description">Enter the factual timeline of events in chronological order. Use numbered lists for clarity.</div>
+                <textarea id="chronology" class="large-textarea" placeholder="1. On January 15, 2024, the defendant...&#10;2. Subsequently, on February 3, 2024...&#10;3. The plaintiff then responded by..."></textarea>
+                <div class="input-feedback">
+                    <div class="character-counter" id="chronologyCounter">0 characters</div>
+                    <div class="auto-save-indicator" id="chronologyAutoSave">✓ Auto-saved</div>
+                </div>
+                <div class="success-notification" id="chronologySuccess">✓ Chronology section completed</div>
+            </div>
+
+            <div class="input-group">
+                <label for="arguments" class="input-label">
+                    Arguments & Evidence <span class="required">*</span>
+                    <span class="section-status" id="argumentsStatus">
+                        <span class="status-indicator status-required">Required</span>
+                    </span>
+                </label>
+                <div class="input-description">Outline your legal arguments with supporting evidence and citations.</div>
+                <textarea id="arguments" class="large-textarea" placeholder="1. Breach of Contract Analysis:&#10;   - Element 1: Valid contract existed (see Exhibit A)&#10;   - Element 2: Defendant's performance failures...&#10;&#10;2. Damages Assessment:&#10;   - Direct damages: $X based on...&#10;   - Consequential damages: $Y per..."></textarea>
+                <div class="input-feedback">
+                    <div class="character-counter" id="argumentsCounter">0 characters</div>
+                    <div class="auto-save-indicator" id="argumentsAutoSave">✓ Auto-saved</div>
+                </div>
+                <div class="success-notification" id="argumentsSuccess">✓ Arguments & Evidence section completed</div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    Template Precedent <span class="required">*</span>
+                    <span class="section-status" id="templateStatus">
+                        <span class="status-indicator status-required">Required</span>
+                    </span>
+                </label>
+                <div class="input-description">Provide a precedent document template to match format and style.</div>
+                
+                <div class="template-tabs">
+                    <button class="template-tab active" data-tab="upload">File Upload</button>
+                    <button class="template-tab" data-tab="paste">Manual Paste</button>
+                </div>
+
+                <div class="template-content active" id="upload">
+                    <div class="file-upload-section" id="fileUpload">
+                        <input type="file" id="templateFile" class="file-input" accept=".docx,.pdf,.txt">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-text">Click to upload or drag & drop</div>
+                        <div class="upload-description">Supports .docx, .pdf, and .txt files</div>
+                    </div>
+                    <div id="uploadStatus" class="input-description" style="margin-top: 1rem; display: none;"></div>
+                </div>
+
+                <div class="template-content" id="paste">
+                    <textarea id="templateText" class="large-textarea" placeholder="Paste your template document here...&#10;&#10;EXAMPLE FORMAT:&#10;IN THE SUPERIOR COURT OF [JURISDICTION]&#10;&#10;[CASE CAPTION]&#10;&#10;I. INTRODUCTION&#10;&#10;II. STATEMENT OF FACTS&#10;   1. [Fact pattern]&#10;   2. [Additional facts]&#10;&#10;III. ARGUMENT&#10;   A. [Legal argument heading]&#10;      1. [Sub-argument]&#10;      2. [Supporting authority]"></textarea>
+                    <div class="input-feedback">
+                        <div class="character-counter" id="templateCounter">0 characters</div>
+                        <div class="auto-save-indicator" id="templateAutoSave">✓ Auto-saved</div>
+                    </div>
+                    <div class="success-notification" id="templateSuccess">✓ Template precedent received via manual paste</div>
+                </div>
+                
+                <div class="template-status-bar" id="templateStatusBar">
+                    <p class="template-status-text" id="templateStatusText">No template precedent provided</p>
+                </div>
+                
+                <div class="template-active-indicator" id="templateActiveIndicator">
+                    <strong>✓ Template Status: Ready</strong> 
+                    <span class="template-source-badge" id="templateSourceBadge">Manual Input</span>
+                    <div style="font-size: 0.8rem; margin-top: 0.25rem; color: #166534;">Your template precedent has been received and will be used to generate prompts.</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="instructions" class="input-label">
+                    Additional Instructions
+                    <span class="section-status" id="instructionsStatus">
+                        <span class="status-indicator" style="background: #e5e7eb; color: #6b7280;">Optional</span>
+                    </span>
+                </label>
+                <div class="input-description">Optional case-specific guidance or special requirements.</div>
+                <textarea id="instructions" placeholder="Special considerations:&#10;- Focus on contractual interpretation precedents&#10;- Emphasize damages calculation methodology&#10;- Include alternative legal theories"></textarea>
+                <div class="input-feedback">
+                    <div class="character-counter" id="instructionsCounter">0 characters</div>
+                    <div class="auto-save-indicator" id="instructionsAutoSave">✓ Auto-saved</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <h2 class="section-title">
+                Advanced Legal Context 
+                <span class="tooltip help-icon">?
+                    <span class="tooltip-text">Optional sections that provide comprehensive case context to enhance AI reasoning and ensure all legal aspects are properly addressed.</span>
+                </span>
+            </h2>
+
+            <div class="input-group" id="opposingSubmissionsGroup" style="display: none;">
+                <label for="opposingSubmissions" class="input-label">
+                    Applicant's Submissions to Rebut
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">If you're the respondent, provide the opposing party's arguments to ensure every point is comprehensively addressed in your response. This enables systematic rebuttal of all opposing arguments.</span>
+                    </span>
+                </label>
+                <div class="input-description">Provide the opposing party's submissions to ensure comprehensive rebuttal of all arguments.</div>
+                <textarea id="opposingSubmissions" class="large-textarea" placeholder="Enter the applicant's key arguments and legal submissions that you need to address...&#10;&#10;EXAMPLE:&#10;1. Applicant argues that defendant breached...&#10;2. Applicant claims damages of $X based on...&#10;3. Applicant seeks injunctive relief because..."></textarea>
+                <div class="input-feedback">
+                    <div class="character-counter" id="opposingSubmissionsCounter">0 characters</div>
+                    <div class="auto-save-indicator" id="opposingSubmissionsAutoSave">✓ Auto-saved</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    Case Pleadings
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">Include original pleadings to provide AI with comprehensive case theories and material facts. This enables better alignment between arguments and established case positions.</span>
+                    </span>
+                </label>
+                <div class="input-description">Provide pleadings documents to give AI full context of case theories and material facts.</div>
+                
+                <div class="template-tabs" id="pleadingsTabs">
+                    <button class="template-tab active" data-tab="plaintiff-pleadings">Plaintiff's Pleadings</button>
+                    <button class="template-tab" data-tab="defendant-pleadings">Defendant's Pleadings</button>
+                </div>
+
+                <div class="template-content active" id="plaintiff-pleadings">
+                    <textarea id="plaintiffPleadings" class="large-textarea" placeholder="Enter plaintiff's complaint, motion papers, or other relevant pleadings...&#10;&#10;EXAMPLE:&#10;1. PLAINTIFF'S FIRST CAUSE OF ACTION&#10;   (Breach of Contract)&#10;&#10;2. Plaintiff alleges and incorporates paragraphs 1-20...&#10;&#10;3. Defendant materially breached the Agreement by..."></textarea>
+                    <div class="input-feedback">
+                        <div class="character-counter" id="plaintiffPleadingsCounter">0 characters</div>
+                        <div class="auto-save-indicator" id="plaintiffPleadingsAutoSave">✓ Auto-saved</div>
+                    </div>
+                </div>
+
+                <div class="template-content" id="defendant-pleadings">
+                    <textarea id="defendantPleadings" class="large-textarea" placeholder="Enter defendant's answer, cross-complaints, or other relevant pleadings...&#10;&#10;EXAMPLE:&#10;FIRST AFFIRMATIVE DEFENSE&#10;(Failure to State a Cause of Action)&#10;&#10;The complaint fails to state facts sufficient to constitute a cause of action...&#10;&#10;CROSS-COMPLAINT&#10;1. Defendant alleges..."></textarea>
+                    <div class="input-feedback">
+                        <div class="character-counter" id="defendantPleadingsCounter">0 characters</div>
+                        <div class="auto-save-indicator" id="defendantPleadingsAutoSave">✓ Auto-saved</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="summonsApplication" class="input-label">
+                    Summons/Application Details
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">Include the specific prayers for relief and remedies being sought in this interlocutory matter. This ensures the AI aligns arguments with requested outcomes.</span>
+                    </span>
+                </label>
+                <div class="input-description">Specify the prayers for relief and remedies sought in this interlocutory matter.</div>
+                <textarea id="summonsApplication" placeholder="PRAYER FOR RELIEF:&#10;&#10;WHEREFORE, Plaintiff prays for judgment as follows:&#10;&#10;1. For damages according to proof, but not less than $500,000;&#10;&#10;2. For injunctive relief restraining defendant from...&#10;&#10;3. For reasonable attorneys' fees and costs;&#10;&#10;4. For such other relief as the Court deems just and proper."></textarea>
+                <div class="input-feedback">
+                    <div class="character-counter" id="summonsApplicationCounter">0 characters</div>
+                    <div class="auto-save-indicator" id="summonsApplicationAutoSave">✓ Auto-saved</div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">
+                    <input type="checkbox" id="includeChecklist" checked style="margin-right: 0.5rem;">
+                    Include Verification Checklist
+                    <span class="tooltip help-icon">?
+                        <span class="tooltip-text">Instructs the AI to generate a detailed checklist confirming all arguments, evidence, and relief requests are properly addressed in the draft submission.</span>
+                    </span>
+                </label>
+                <div class="input-description">Generate a comprehensive checklist to verify all arguments and evidence are properly integrated.</div>
+            </div>
+        </div>
+
+        <div class="validation-warnings" id="validationWarnings">
+            <div class="warning-item">⚠️ Chronology section is empty</div>
+            <div class="warning-item">⚠️ Arguments & Evidence section is empty</div>
+            <div class="warning-item">⚠️ No template precedent provided</div>
+        </div>
+
+        <div class="generate-section">
+            <button class="generate-btn" id="generateBtn">
+                <span id="generateText">Generate Optimized Prompts</span>
+                <span class="loading" id="generateLoading" style="display: none;"></span>
+            </button>
+        </div>
+
+        <div class="output-section" id="outputSection">
+            <h2 class="section-title">Generated Prompts</h2>
+            
+            <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 1rem; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: #0c4a6e; font-size: 1rem;">📋 How to Use These Prompts</h3>
+                <ul style="margin: 0; padding-left: 1.2rem; color: #0c4a6e; font-size: 0.9rem; line-height: 1.4;">
+                    <li><strong>Claude Sonnet 4.0:</strong> Copy the prompt and paste it directly into <a href="https://claude.ai" target="_blank" style="color: #0ea5e9;">claude.ai</a></li>
+                    <li><strong>Gemini 2.5 Pro:</strong> Copy the prompt and paste it directly into <a href="https://gemini.google.com" target="_blank" style="color: #0ea5e9;">gemini.google.com</a></li>
+                    <li><strong>For long documents:</strong> If you exceed context limits, consider breaking your content into sections</li>
+                    <li><strong>Quality tip:</strong> If the first response isn't satisfactory, click regenerate or ask for revisions</li>
+                </ul>
+            </div>
+            
+            <div class="output-tabs" id="outputTabs">
+                <button class="output-tab active" data-output="claude">Claude Sonnet 4.0</button>
+                <button class="output-tab" data-output="gemini">Gemini 2.5 Pro</button>
+                <button class="output-tab" data-output="comparison">Side-by-Side</button>
+            </div>
+
+            <div id="claudeOutput" class="output-content">
+                <div class="prompt-output" id="claudePrompt"></div>
+                <div class="quality-indicator" id="claudeQuality">
+                    <div class="quality-score">
+                        <span>Completeness Score:</span>
+                        <div class="score-bar">
+                            <div class="score-fill" id="claudeScoreFill" style="width: 0%"></div>
+                        </div>
+                        <span id="claudeScoreText">0%</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #6b7280;" id="claudeQualityText">
+                        Quality analysis will appear here after generation.
+                    </div>
+                </div>
+                <button class="copy-btn" id="copyClaude">Copy for claude.ai</button>
+            </div>
+
+            <div id="geminiOutput" class="output-content" style="display: none;">
+                <div class="prompt-output" id="geminiPrompt"></div>
+                <div class="quality-indicator" id="geminiQuality">
+                    <div class="quality-score">
+                        <span>Completeness Score:</span>
+                        <div class="score-bar">
+                            <div class="score-fill" id="geminiScoreFill" style="width: 0%"></div>
+                        </div>
+                        <span id="geminiScoreText">0%</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #6b7280;" id="geminiQualityText">
+                        Quality analysis will appear here after generation.
+                    </div>
+                </div>
+                <button class="copy-btn" id="copyGemini">Copy for gemini.google.com</button>
+            </div>
+
+            <div id="comparisonOutput" class="output-content" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem;">Claude Sonnet 4.0 Prompt</h3>
+                        <div class="prompt-output" id="claudePromptComparison"></div>
+                        <button class="copy-btn" id="copyClaude2">Copy for claude.ai</button>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 0.5rem;">Gemini 2.5 Pro Prompt</h3>
+                        <div class="prompt-output" id="geminiPromptComparison"></div>
+                        <button class="copy-btn" id="copyGemini2">Copy for gemini.google.com</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF.js Library - Local Reference -->
+    <script src="./pdf.min.js"></script>
+    
+    <!-- Mammoth.js Library - Local Reference -->
+    <script src="./mammoth.browser.min.js"></script>
+
+    <script>
+        // Initialize PDF.js worker with local file
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js';
+        }
+
+        // Application state
+        let appState = {
+            platform: 'claude',
+            position: 'applicant',
+            chronology: '',
+            arguments: '',
+            templateText: '',
+            instructions: '',
+            opposingSubmissions: '',
+            plaintiffPleadings: '',
+            defendantPleadings: '',
+            summonsApplication: '',
+            includeChecklist: true,
+            templateFile: null,
+            claudePrompt: '',
+            geminiPrompt: ''
+        };
+
+        // DOM elements
+        const elements = {
+            platformRadios: document.querySelectorAll('input[name="platform"]'),
+            positionRadios: document.querySelectorAll('input[name="position"]'),
+            chronologyTextarea: document.getElementById('chronology'),
+            argumentsTextarea: document.getElementById('arguments'),
+            templateTextarea: document.getElementById('templateText'),
+            instructionsTextarea: document.getElementById('instructions'),
+            opposingSubmissionsTextarea: document.getElementById('opposingSubmissions'),
+            opposingSubmissionsGroup: document.getElementById('opposingSubmissionsGroup'),
+            plaintiffPleadingsTextarea: document.getElementById('plaintiffPleadings'),
+            defendantPleadingsTextarea: document.getElementById('defendantPleadings'),
+            summonsApplicationTextarea: document.getElementById('summonsApplication'),
+            includeChecklistCheckbox: document.getElementById('includeChecklist'),
+            templateFile: document.getElementById('templateFile'),
+            fileUpload: document.getElementById('fileUpload'),
+            uploadStatus: document.getElementById('uploadStatus'),
+            templateTabs: document.querySelectorAll('.template-tab'),
+            pleadingsTabs: document.querySelectorAll('#pleadingsTabs .template-tab'),
+            templateContents: document.querySelectorAll('.template-content'),
+            generateBtn: document.getElementById('generateBtn'),
+            generateText: document.getElementById('generateText'),
+            generateLoading: document.getElementById('generateLoading'),
+            outputSection: document.getElementById('outputSection'),
+            outputTabs: document.querySelectorAll('.output-tab'),
+            outputContents: document.querySelectorAll('.output-content'),
+            validationWarnings: document.getElementById('validationWarnings'),
+            counters: {
+                chronology: document.getElementById('chronologyCounter'),
+                arguments: document.getElementById('argumentsCounter'),
+                template: document.getElementById('templateCounter'),
+                instructions: document.getElementById('instructionsCounter'),
+                opposingSubmissions: document.getElementById('opposingSubmissionsCounter'),
+                plaintiffPleadings: document.getElementById('plaintiffPleadingsCounter'),
+                defendantPleadings: document.getElementById('defendantPleadingsCounter'),
+                summonsApplication: document.getElementById('summonsApplicationCounter')
+            },
+            copyButtons: {
+                claude: document.getElementById('copyClaude'),
+                gemini: document.getElementById('copyGemini'),
+                claude2: document.getElementById('copyClaude2'),
+                gemini2: document.getElementById('copyGemini2')
+            },
+            sessionButtons: {
+                load: document.getElementById('loadSession'),
+                save: document.getElementById('saveSession'),
+                clear: document.getElementById('clearAll')
+            }
+        };
+
+        // Initialize application
+        function init() {
+            setupEventListeners();
+            autoLoadSession();
+            // Initialize position-dependent UI
+            updatePositionDependentUI();
+            // Initialize all feedback after setup
+            refreshAllFeedback();
+        }
+
+        // Event listeners setup
+        function setupEventListeners() {
+            // Platform selection
+            elements.platformRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    appState.platform = e.target.value;
+                });
+            });
+            
+            // Position selection
+            elements.positionRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    appState.position = e.target.value;
+                    updatePositionDependentUI();
+                });
+            });
+
+            // Text input handlers with enhanced feedback
+            elements.chronologyTextarea.addEventListener('input', (e) => {
+                appState.chronology = e.target.value;
+                updateCharacterCount('chronology', e.target.value);
+                updateValidation();
+                updateSectionStatus('chronology', e.target.value);
+                showAutoSaveIndicator('chronology');
+            });
+            
+            // Add paste event listener for template detection
+            elements.templateTextarea.addEventListener('paste', (e) => {
+                setTimeout(() => {
+                    if (elements.templateTextarea.value.trim()) {
+                        switchTemplateTab('paste');
+                        updateTemplateStatus('manual');
+                        showTemplateSuccess();
+                    }
+                }, 100);
+            });
+
+            elements.argumentsTextarea.addEventListener('input', (e) => {
+                appState.arguments = e.target.value;
+                updateCharacterCount('arguments', e.target.value);
+                updateValidation();
+                updateSectionStatus('arguments', e.target.value);
+                showAutoSaveIndicator('arguments');
+            });
+
+            elements.templateTextarea.addEventListener('input', (e) => {
+                appState.templateText = e.target.value;
+                updateCharacterCount('template', e.target.value);
+                updateValidation();
+                updateSectionStatus('template', e.target.value);
+                updateTemplateStatus(e.target.value.trim() ? 'manual' : 'none');
+                showAutoSaveIndicator('template');
+            });
+
+            elements.instructionsTextarea.addEventListener('input', (e) => {
+                appState.instructions = e.target.value;
+                updateCharacterCount('instructions', e.target.value);
+                updateSectionStatus('instructions', e.target.value);
+                showAutoSaveIndicator('instructions');
+            });
+            
+            elements.opposingSubmissionsTextarea.addEventListener('input', (e) => {
+                appState.opposingSubmissions = e.target.value;
+                updateCharacterCount('opposingSubmissions', e.target.value);
+                showAutoSaveIndicator('opposingSubmissions');
+            });
+
+            elements.plaintiffPleadingsTextarea.addEventListener('input', (e) => {
+                appState.plaintiffPleadings = e.target.value;
+                updateCharacterCount('plaintiffPleadings', e.target.value);
+                showAutoSaveIndicator('plaintiffPleadings');
+            });
+
+            elements.defendantPleadingsTextarea.addEventListener('input', (e) => {
+                appState.defendantPleadings = e.target.value;
+                updateCharacterCount('defendantPleadings', e.target.value);
+                showAutoSaveIndicator('defendantPleadings');
+            });
+
+            elements.summonsApplicationTextarea.addEventListener('input', (e) => {
+                appState.summonsApplication = e.target.value;
+                updateCharacterCount('summonsApplication', e.target.value);
+                showAutoSaveIndicator('summonsApplication');
+            });
+
+            elements.includeChecklistCheckbox.addEventListener('change', (e) => {
+                appState.includeChecklist = e.target.checked;
+            });
+
+            // Template tabs
+            elements.templateTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    switchTemplateTab(tabName);
+                });
+            });
+
+            // Pleadings tabs
+            elements.pleadingsTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const tabName = e.target.dataset.tab;
+                    switchPleadingsTab(tabName);
+                });
+            });
+
+            // File upload
+            elements.templateFile.addEventListener('change', handleFileUpload);
+            elements.fileUpload.addEventListener('click', () => elements.templateFile.click());
+            elements.fileUpload.addEventListener('dragover', handleDragOver);
+            elements.fileUpload.addEventListener('drop', handleFileDrop);
+
+            // Generate button
+            elements.generateBtn.addEventListener('click', generatePrompts);
+
+            // Output tabs
+            elements.outputTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const outputType = e.target.dataset.output;
+                    switchOutputTab(outputType);
+                });
+            });
+
+            // Copy buttons
+            Object.entries(elements.copyButtons).forEach(([key, button]) => {
+                button.addEventListener('click', (e) => handleCopy(e, key));
+            });
+
+            // Session buttons
+            elements.sessionButtons.load.addEventListener('click', loadSession);
+            elements.sessionButtons.save.addEventListener('click', saveSession);
+            elements.sessionButtons.clear.addEventListener('click', clearAllFields);
+            
+            // File input for session loading
+            document.getElementById('sessionFileInput').addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    loadSessionFromFile(e.target.files[0]);
+                }
+            });
+        }
+
+        // Character counting
+        function updateCharacterCount(field, text) {
+            const counter = elements.counters[field];
+            if (!counter) return;
+
+            const count = text.length;
+            counter.textContent = `${count} characters`;
+
+            // Platform-specific limits (approximate)
+            const limits = {
+                claude: 200000,
+                gemini: 150000
+            };
+
+            const currentLimit = limits[appState.platform] || limits.claude;
+            
+            if (count > currentLimit * 0.9) {
+                counter.className = 'character-counter error';
+            } else if (count > currentLimit * 0.75) {
+                counter.className = 'character-counter warning';
+            } else {
+                counter.className = 'character-counter';
+            }
+        }
+
+        // Template tab switching
+        function switchTemplateTab(tabName) {
+            elements.templateTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            elements.templateContents.forEach(content => {
+                content.classList.toggle('active', content.id === tabName);
+            });
+        }
+
+        // Pleadings tab switching
+        function switchPleadingsTab(tabName) {
+            elements.pleadingsTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            document.querySelectorAll('#plaintiff-pleadings, #defendant-pleadings').forEach(content => {
+                content.classList.toggle('active', content.id === tabName);
+            });
+        }
+
+        // File upload handling
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            elements.fileUpload.classList.add('dragover');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            elements.fileUpload.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        // Enhanced file processing with PDF and DOCX support
+        async function processFile(file) {
+            const allowedTypes = ['.pdf', '.docx', '.txt'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                showUploadStatus('Unsupported file type. Please use .pdf, .docx, or .txt files.', 'error');
+                return;
+            }
+
+            showUploadStatus('Processing file...', 'processing');
+            appState.templateFile = file;
+
+            try {
+                let extractedText = '';
+
+                if (fileExtension === '.txt') {
+                    extractedText = await readTextFile(file);
+                } else if (fileExtension === '.pdf') {
+                    extractedText = await extractPDFText(file);
+                } else if (fileExtension === '.docx') {
+                    extractedText = await extractDOCXText(file);
+                }
+
+                if (extractedText.trim()) {
+                    appState.templateText = extractedText;
+                    elements.templateTextarea.value = extractedText;
+                    updateCharacterCount('template', extractedText);
+                    showUploadStatus(`✓ Successfully processed: ${file.name}`, 'success');
+                    updateValidation();
+                } else {
+                    showUploadStatus('No text content found in file. Please check the file or use manual paste.', 'warning');
+                }
+            } catch (error) {
+                console.error('File processing error:', error);
+                showUploadStatus(`Error processing ${file.name}. Please try manual paste instead.`, 'error');
+            }
+        }
+
+        // Text file reader
+        function readTextFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file);
+            });
+        }
+
+        // PDF text extraction using PDF.js
+        async function extractPDFText(file) {
+            if (typeof pdfjsLib === 'undefined') {
+                throw new Error('PDF.js library not loaded');
+            }
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const typedarray = new Uint8Array(e.target.result);
+                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                        let fullText = '';
+
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const textContent = await page.getTextContent();
+                            
+                            const pageText = textContent.items
+                                .map(item => item.str)
+                                .join(' ')
+                                .replace(/\s+/g, ' ');
+                            
+                            fullText += pageText + '\n\n';
+                        }
+
+                        resolve(fullText.trim());
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // DOCX text extraction using mammoth.js
+        async function extractDOCXText(file) {
+            if (typeof mammoth === 'undefined') {
+                throw new Error('Mammoth.js library not loaded');
+            }
+
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                        
+                        // Clean up the extracted text
+                        const cleanText = result.value
+                            .replace(/\r\n/g, '\n')
+                            .replace(/\r/g, '\n')
+                            .replace(/\n{3,}/g, '\n\n')
+                            .trim();
+
+                        if (result.messages && result.messages.length > 0) {
+                            console.warn('Mammoth processing messages:', result.messages);
+                        }
+
+                        resolve(cleanText);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        
+        // Comprehensive feedback refresh function with error handling
+        function refreshAllFeedback() {
+            try {
+                console.log('Refreshing all feedback indicators...');
+                
+                // Update all section statuses
+                updateSectionStatus('chronology', appState.chronology);
+                updateSectionStatus('arguments', appState.arguments);
+                updateSectionStatus('template', appState.templateText);
+                updateSectionStatus('instructions', appState.instructions);
+                
+                // Update template-specific status
+                if (appState.templateText && appState.templateText.trim()) {
+                    updateTemplateStatus('manual');
+                    // Switch to manual paste tab if template exists
+                    switchTemplateTab('paste');
+                } else {
+                    updateTemplateStatus('none');
+                }
+                
+                // Update character counts for all fields
+                updateCharacterCount('chronology', appState.chronology);
+                updateCharacterCount('arguments', appState.arguments);
+                updateCharacterCount('template', appState.templateText);
+                updateCharacterCount('instructions', appState.instructions);
+                updateCharacterCount('opposingSubmissions', appState.opposingSubmissions);
+                updateCharacterCount('plaintiffPleadings', appState.plaintiffPleadings);
+                updateCharacterCount('defendantPleadings', appState.defendantPleadings);
+                updateCharacterCount('summonsApplication', appState.summonsApplication);
+                
+                // Update validation and progress
+                updateValidation();
+                updateOverallProgress();
+                
+                console.log('Feedback refresh completed successfully');
+            } catch (error) {
+                console.error('Error in refreshAllFeedback:', error);
+                // Try to at least update validation as fallback
+                try {
+                    updateValidation();
+                } catch (fallbackError) {
+                    console.error('Even fallback validation failed:', fallbackError);
+                }
+            }
+        }
+        
+        // Position-dependent UI updates
+        function updatePositionDependentUI() {
+            const isRespondent = appState.position === 'respondent';
+            elements.opposingSubmissionsGroup.style.display = isRespondent ? 'block' : 'none';
+        }
+        
+        // Missing feedback functions implementation with error handling
+        function updateSectionStatus(fieldName, value) {
+            try {
+                const statusElement = document.getElementById(`${fieldName}Status`);
+                if (!statusElement) {
+                    console.warn(`Status element not found for: ${fieldName}Status`);
+                    return;
+                }
+                
+                const indicator = statusElement.querySelector('.status-indicator');
+                if (!indicator) {
+                    console.warn(`Status indicator not found for: ${fieldName}`);
+                    return;
+                }
+                
+                const hasContent = value && value.trim().length > 0;
+            
+                if (hasContent) {
+                    indicator.className = 'status-indicator status-complete';
+                    indicator.textContent = 'Complete';
+                    
+                    // Show success notification for required fields
+                    if (fieldName === 'chronology' || fieldName === 'arguments' || fieldName === 'template') {
+                        const successElement = document.getElementById(`${fieldName}Success`);
+                        if (successElement) {
+                            successElement.style.display = 'block';
+                            setTimeout(() => {
+                                successElement.style.display = 'none';
+                            }, 3000);
+                        }
+                    }
+                } else {
+                    if (fieldName === 'instructions') {
+                        indicator.className = 'status-indicator';
+                        indicator.style.background = '#e5e7eb';
+                        indicator.style.color = '#6b7280';
+                        indicator.textContent = 'Optional';
+                    } else {
+                        indicator.className = 'status-indicator status-required';
+                        indicator.textContent = 'Required';
+                    }
+                }
+            } catch (error) {
+                console.error(`Error updating section status for ${fieldName}:`, error);
+            }
+        }
+        
+        function showAutoSaveIndicator(fieldName) {
+            const autoSaveElement = document.getElementById(`${fieldName}AutoSave`);
+            if (!autoSaveElement) return;
+            
+            autoSaveElement.classList.add('show');
+            setTimeout(() => {
+                autoSaveElement.classList.remove('show');
+            }, 2000);
+        }
+        
+        function updateTemplateStatus(source) {
+            const statusBar = document.getElementById('templateStatusBar');
+            const statusText = document.getElementById('templateStatusText');
+            const activeIndicator = document.getElementById('templateActiveIndicator');
+            const sourceBadge = document.getElementById('templateSourceBadge');
+            
+            if (source === 'manual' || source === 'file') {
+                if (statusBar) statusBar.classList.add('active');
+                if (statusText) statusText.textContent = 'Template precedent loaded and ready';
+                if (activeIndicator) activeIndicator.classList.add('show');
+                if (sourceBadge) sourceBadge.textContent = source === 'manual' ? 'Manual Input' : 'File Upload';
+            } else {
+                if (statusBar) statusBar.classList.remove('active');
+                if (statusText) statusText.textContent = 'No template precedent provided';
+                if (activeIndicator) activeIndicator.classList.remove('show');
+            }
+        }
+        
+        function showTemplateSuccess() {
+            const successElement = document.getElementById('templateSuccess');
+            if (successElement) {
+                successElement.style.display = 'block';
+                setTimeout(() => {
+                    successElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        function updateOverallProgress() {
+            const requiredFields = ['chronology', 'arguments', 'templateText'];
+            let completedCount = 0;
+            
+            requiredFields.forEach(field => {
+                if (appState[field] && appState[field].trim().length > 0) {
+                    completedCount++;
+                }
+            });
+            
+            const progressFill = document.getElementById('overallProgress');
+            const progressText = document.getElementById('progressText');
+            const percentage = Math.round((completedCount / requiredFields.length) * 100);
+            
+            if (progressFill) progressFill.style.width = `${percentage}%`;
+            if (progressText) progressText.textContent = `Form completion: ${percentage}% (${completedCount} of ${requiredFields.length} required sections)`;
+            
+            // Show positive validation when all complete
+            const positiveValidation = document.getElementById('validationPositive');
+            if (completedCount === requiredFields.length && positiveValidation) {
+                const positiveItems = [
+                    'Chronology section completed',
+                    'Arguments & Evidence section completed', 
+                    'Template precedent provided'
+                ];
+                
+                positiveValidation.innerHTML = positiveItems.map(item => 
+                    `<div class="validation-item">${item}</div>`
+                ).join('');
+                positiveValidation.classList.add('show');
+            } else if (positiveValidation) {
+                positiveValidation.classList.remove('show');
+            }
+        }
+
+        function showUploadStatus(message, type) {
+            elements.uploadStatus.textContent = message;
+            elements.uploadStatus.className = `input-description ${type}`;
+            elements.uploadStatus.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    elements.uploadStatus.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Validation
+        function updateValidation() {
+            const warnings = [];
+            
+            if (!appState.chronology.trim()) {
+                warnings.push('⚠️ Chronology section is empty');
+            }
+            
+            if (!appState.arguments.trim()) {
+                warnings.push('⚠️ Arguments & Evidence section is empty');
+            }
+            
+            if (!appState.templateText.trim()) {
+                warnings.push('⚠️ No template precedent provided');
+            }
+
+            const warningsDiv = elements.validationWarnings;
+            if (warnings.length > 0) {
+                warningsDiv.innerHTML = warnings.map(w => `<div class="warning-item">${w}</div>`).join('');
+                warningsDiv.classList.add('show');
+            } else {
+                warningsDiv.classList.remove('show');
+            }
+
+            // Enable/disable generate button
+            elements.generateBtn.disabled = warnings.length > 0;
+        }
+
+        // Prompt generation
+        function generatePrompts() {
+            if (elements.generateBtn.disabled) return;
+
+            // Show loading state
+            elements.generateText.style.display = 'none';
+            elements.generateLoading.style.display = 'inline-block';
+            elements.generateBtn.disabled = true;
+
+            // Simulate processing delay
+            setTimeout(() => {
+                const claudePrompt = generateClaudePrompt();
+                const geminiPrompt = generateGeminiPrompt();
+
+                appState.claudePrompt = claudePrompt;
+                appState.geminiPrompt = geminiPrompt;
+
+                // Display prompts
+                document.getElementById('claudePrompt').textContent = claudePrompt;
+                document.getElementById('geminiPrompt').textContent = geminiPrompt;
+                document.getElementById('claudePromptComparison').textContent = claudePrompt;
+                document.getElementById('geminiPromptComparison').textContent = geminiPrompt;
+
+                // Show output section
+                elements.outputSection.classList.add('show');
+
+                // Calculate and display quality scores
+                const claudeScore = calculateQualityScore(claudePrompt);
+                const geminiScore = calculateQualityScore(geminiPrompt);
+                
+                updateQualityIndicator('claude', claudeScore);
+                updateQualityIndicator('gemini', geminiScore);
+
+                // Update output tabs based on platform selection
+                updateOutputTabs();
+
+                // Hide loading state
+                elements.generateText.style.display = 'inline-block';
+                elements.generateLoading.style.display = 'none';
+                elements.generateBtn.disabled = false;
+
+                // Scroll to output
+                elements.outputSection.scrollIntoView({ behavior: 'smooth' });
+            }, 1500);
+        }
+
+        // Enhanced Claude prompt template with strategic hierarchy
+        function generateClaudePrompt() {
+            const isRespondent = appState.position === 'respondent';
+            const hasOpposingSubmissions = isRespondent && appState.opposingSubmissions && appState.opposingSubmissions.trim();
+            
+            let prompt = `<role>
+You are an expert legal practitioner with advanced analytical capabilities specializing in sophisticated legal reasoning and document analysis. You excel at structured thinking, comprehensive case analysis, and persuasive legal argumentation.
+</role>
+
+<critical_context_hierarchy>
+Understand the strategic context that governs ALL your work:
+
+PRIMARY GOAL: ${isRespondent ? 'Persuade the court to DENY the relief sought' : 'Persuade the court to GRANT the relief sought'}
+YOUR POSITION: ${isRespondent ? 'Respondent/Defendant opposing relief' : 'Applicant/Plaintiff seeking relief'}
+STYLE REFERENCE: Use the template precedent as your model for sophisticated legal reasoning depth and style
+SUPPORTING CONTEXT: All chronology, pleadings, evidence must serve your persuasive goal
+</critical_context_hierarchy>
+
+<task>
+Transform the provided bullet-point arguments into a comprehensive, persuasive legal submission that ${isRespondent ? 'systematically defeats the opposing relief request' : 'compellingly establishes entitlement to relief'}. This is NOT just formatting - you must elaborate, develop, and synthesize arguments using all provided context.
+</task>
+
+<approach>
+Think step-by-step through this analysis using sophisticated chain-of-thought reasoning. Your approach must be:
+1. STRATEGIC: Every argument serves your persuasive goal
+2. COMPREHENSIVE: Transform bullet points into multiple paragraphs of legal analysis
+3. CONTEXTUAL: Use ALL provided information to support each argument
+4. PRECEDENT-GUIDED: Study the template for ideal depth and persuasive techniques
+</approach>
+
+<template_analysis>
+First, conduct a comprehensive analysis of the provided precedent document as your REFERENCE for what constitutes fully-developed legal reasoning:
+- Document architecture: section hierarchy, organizational flow, structural patterns
+- Citation methodology: legal reference styles, case citation formats, statutory references  
+- Argumentative framework: logical progression, evidence integration, persuasive techniques
+- Professional voice: tone register, formality level, legal terminology usage
+- Formatting DNA: numbering systems, emphasis patterns, spacing conventions
+- PERSUASIVE TECHNIQUES: Study how the template advances its arguments to achieve its goal
+- DEPTH OF ANALYSIS: Note how bullet points would be expanded into comprehensive paragraphs
+</template_analysis>`;
+
+            // Add opposing submissions analysis for respondents
+            if (hasOpposingSubmissions) {
+                prompt += `
+
+<opposing_submissions_analysis>
+You are responding to the applicant's submissions. CRITICAL: Every opposing argument must be addressed.
+
+Applicant's Submissions to Rebut:
+${appState.opposingSubmissions}
+
+Your task includes:
+1. Systematically identify each opposing argument
+2. Develop comprehensive rebuttals using your bullet points and context
+3. Ensure no opposing point goes unaddressed
+4. Generate verification table showing all opposing arguments are dealt with
+</opposing_submissions_analysis>`;
+            }
+
+            // Add pleadings context if provided
+            if (appState.plaintiffPleadings || appState.defendantPleadings) {
+                prompt += `\n\n<case_pleadings>
+Analyze the following pleadings to understand the established case theories and ensure your arguments align with ${isRespondent ? 'your defensive strategy' : 'your case theory'}:`;
+                
+                if (appState.plaintiffPleadings) {
+                    prompt += `\n\n<plaintiff_pleadings>
+${appState.plaintiffPleadings}
+</plaintiff_pleadings>`;
+                }
+                
+                if (appState.defendantPleadings) {
+                    prompt += `\n\n<defendant_pleadings>
+${appState.defendantPleadings}
+</defendant_pleadings>`;
+                }
+                
+                prompt += `\n</case_pleadings>`;
+            }
+
+            // Add summons/application context if provided
+            if (appState.summonsApplication) {
+                prompt += `\n\n<relief_sought>
+This defines your ULTIMATE GOAL. ${isRespondent ? 'Your arguments must persuasively establish why this relief should be DENIED' : 'Your arguments must persuasively establish why this relief should be GRANTED'}:
+${appState.summonsApplication}
+</relief_sought>`;
+            }
+
+            prompt += `\n\n<factual_foundation>
+${appState.chronology}
+</factual_foundation>
+
+<legal_arguments>
+${appState.arguments}
+</legal_arguments>
+
+<template_precedent>
+${appState.templateText}
+</template_precedent>
+
+<instructions>
+Think carefully and systematically about this task. Using your advanced reasoning capabilities, transform your bullet-point arguments into a comprehensive, persuasive legal submission that ${isRespondent ? 'systematically defeats the relief sought' : 'compellingly establishes entitlement to relief'}:
+
+1. **Strategic Template Analysis**: Study the template as your reference for fully-developed legal reasoning. Learn its persuasive techniques, depth of analysis, and professional sophistication.
+
+2. **Argument Elaboration**: Transform EACH bullet point into MULTIPLE PARAGRAPHS of comprehensive legal analysis. Use ALL provided context (chronology, pleadings, evidence) to develop sophisticated arguments.
+
+3. **Persuasive Narrative Construction**: Weave chronological facts into compelling narrative that serves your strategic goal of ${isRespondent ? 'denying relief' : 'obtaining relief'}.
+
+4. **Evidence Synthesis**: Integrate all evidence references, chronological facts, and pleading materials to support each elaborated argument with comprehensive legal reasoning.
+
+5. **Format & Style Compliance**: Match the template's format, tone, and professional conventions while serving your persuasive goal.
+
+6. **Complete Development**: Ensure every bullet point becomes a fully-developed, multi-paragraph argument supported by your complete case context.
+
+Your output must demonstrate sophisticated legal reasoning that uses the bullet points as a framework but develops them into comprehensive, persuasive arguments worthy of the template's standard.
+</instructions>`;
+
+            if (appState.plaintiffPleadings || appState.defendantPleadings) {
+                prompt += `\n7. **Case Theory Alignment**: Ensure all elaborated arguments align with established case theories from the pleadings and serve your ${isRespondent ? 'defensive' : 'offensive'} strategy.`;
+            }
+
+            if (appState.summonsApplication) {
+                prompt += `\n8. **Relief ${isRespondent ? 'Opposition' : 'Support'}**: Every elaborated argument must advance your goal of ${isRespondent ? 'defeating' : 'obtaining'} the prayers for relief.`;
+            }
+
+            if (appState.instructions) {
+                prompt += `\n\n<additional_context>
+${appState.instructions}
+</additional_context>`;
+            }
+
+            // Add verification checklist instruction if requested
+            if (appState.includeChecklist) {
+                prompt += `\n\n<critical_accuracy_requirements>
+MANDATORY INSTRUCTIONS - ABSOLUTE COMPLIANCE REQUIRED:
+
+• NEVER fabricate facts, dates, amounts, or evidence not provided in the input sections
+• NEVER create fictional case citations, exhibit references, or witness statements  
+• NEVER invent legal precedents, case names, or statutory references
+• If information is missing or unclear, use placeholders: [LAWYER TO PROVIDE: specific description]
+• If evidence is referenced but details not provided, mark as: [VERIFY: Exhibit X - description needed]
+• If amounts are uncertain or not specified, use: [AMOUNT TO BE CONFIRMED: description]
+• Better to have clearly marked placeholders than incorrect information
+• You will be evaluated on accuracy - hallucinated content will be considered a failure
+
+Think step-by-step before including any specific facts, figures, or references. Ask yourself: "Was this explicitly provided in the input materials?"
+</critical_accuracy_requirements>
+
+VERIFICATION AND COMPLETION REQUIREMENT:
+After completing your initial draft, perform the following verification protocol:
+
+STEP 1: Generate comprehensive verification table
+STEP 2: Identify any missing or incomplete items
+STEP 3: Attempt to address missing items using ONLY the provided information
+STEP 4: Insert placeholders where information is unavailable
+STEP 5: Update verification table with final status
+STEP 6: Generate placeholder tracking table for lawyer follow-up
+
+=== VERIFICATION CHECKLIST TABLE ===
+
+| Verification Item | Status | Location in Draft | Notes/Action Required |
+|------------------|--------|-------------------|---------------------|`;
+
+                // Add arguments verification rows
+                prompt += `
+| Arguments Integration: |
+| • Breach of contract argument | [Status] | [Location] | [Notes] |
+| • Confidentiality breach argument | [Status] | [Location] | [Notes] |
+| • All numbered arguments from Legal Reasoning Framework | [Status] | [Location] | [Notes] |`;
+
+                // Add evidence verification rows  
+                prompt += `
+| Evidence Citations: |
+| • All exhibit references properly cited | [Status] | [Location] | [Notes] |
+| • All case law citations verified | [Status] | [Location] | [Notes] |
+| • All witness/deposition references included | [Status] | [Location] | [Notes] |`;
+
+                // Add chronological facts verification
+                prompt += `
+| Chronological Facts Integration: |
+| • Contract execution date and terms | [Status] | [Location] | [Notes] |
+| • All breach dates and cure periods | [Status] | [Location] | [Notes] |
+| • All key timeline events from chronology | [Status] | [Location] | [Notes] |`;
+
+                if (appState.plaintiffPleadings || appState.defendantPleadings) {
+                    prompt += `
+| Case Theory Alignment: |
+| • Plaintiff's causes of action addressed | [Status] | [Location] | [Notes] |
+| • Defendant's affirmative defenses addressed | [Status] | [Location] | [Notes] |
+| • Cross-complaint issues addressed | [Status] | [Location] | [Notes] |`;
+                }
+
+                if (appState.summonsApplication) {
+                    prompt += `
+| Relief Coverage: |
+| • All prayers for relief supported | [Status] | [Location] | [Notes] |
+| • Damage calculations included | [Status] | [Location] | [Notes] |
+| • Injunctive relief basis established | [Status] | [Location] | [Notes] |`;
+                }
+
+                prompt += `
+| Template Fidelity: |
+| • Document structure matches template | [Status] | [Location] | [Notes] |
+| • Citation style consistent throughout | [Status] | [Location] | [Notes] |
+| • Professional tone maintained | [Status] | [Location] | [Notes] |
+
+STATUS LEGEND:
+✅ = Complete and verified
+⚠️ = Partial/contains placeholders  
+❌ = Missing/not addressed
+
+COMPLETION INSTRUCTIONS:
+1. Fill in [Status] with ✅, ⚠️, or ❌
+2. Provide specific [Location] references (Section X, ¶Y)
+3. In [Notes], explain any issues or placeholders used
+
+=== PLACEHOLDER TRACKING TABLE ===
+
+| Location | Placeholder Text | Information Needed | Priority |
+|----------|-----------------|-------------------|----------|
+| [Section, Paragraph] | [LAWYER TO PROVIDE: xxx] | [Specific description] | HIGH/MED/LOW |
+| [Section, Paragraph] | [VERIFY: xxx] | [Specific description] | HIGH/MED/LOW |
+| [Section, Paragraph] | [AMOUNT TO BE CONFIRMED] | [Specific description] | HIGH/MED/LOW |
+
+PRIORITY LEVELS:
+• HIGH: Critical for case success, must be completed before filing
+• MEDIUM: Important for strength of case, should be verified
+• LOW: Helpful details that can be refined later
+
+FINAL VERIFICATION SUMMARY:
+Total Items Checked: [X]
+Complete (✅): [X] 
+Partial (⚠️): [X]
+Missing (❌): [X]
+Total Placeholders: [X]
+High Priority Placeholders: [X]
+
+SELF-CORRECTION PROTOCOL:
+After generating these tables, review your draft once more to:
+1. Ensure no hallucinated facts were included
+2. Verify all placeholders are clearly marked
+3. Confirm completion percentages are accurate
+4. Make any final corrections using available information only`;
+
+            // Add opposing submissions verification table for respondents
+            if (hasOpposingSubmissions) {
+                prompt += `
+
+=== OPPOSING SUBMISSIONS RESPONSE VERIFICATION ===
+
+| Opposing Argument | Our Response Location | Rebuttal Type | Strength of Response |
+|------------------|----------------------|---------------|---------------------|
+| [Applicant's Point 1] | [Section X, ¶Y] | [Direct/Indirect] | [Strong/Adequate/Weak] |
+| [Applicant's Point 2] | [Section X, ¶Y] | [Direct/Indirect] | [Strong/Adequate/Weak] |
+| [Add rows for each opposing argument] | | | |
+
+REBUTTAL TYPE DEFINITIONS:
+• DIRECT: Argument directly contradicts and refutes the opposing point
+• INDIRECT: Argument undermines opposing point through alternative reasoning
+
+STRENGTH ASSESSMENT:
+• STRONG: Compelling rebuttal that decisively defeats the opposing argument  
+• ADEQUATE: Reasonable response that addresses the opposing point
+• WEAK: Insufficient response that may leave the opposing argument standing
+
+COMPLETENESS CHECK:
+☐ Every opposing argument has been identified and addressed
+☐ No opposing points go unrebutted
+☐ Response locations are clearly referenced
+☐ All rebuttals serve the goal of denying relief`;
+            }
+
+            prompt += `
+
+ACCURACY CERTIFICATION:
+☐ No facts were fabricated or hallucinated
+☐ All information traces to provided input sections
+☐ Placeholders clearly mark missing information
+☐ Draft ready for lawyer review and completion`;
+
+            prompt += `\n\n<output_format>
+Begin your comprehensive analysis and drafting. Structure your response with clear sections and headings that match the template format. Use formal legal language appropriate for court submissions.
+</output_format>`;
+
+            return prompt;
+        }
+
+        // Enhanced Gemini prompt template with strategic hierarchy
+        function generateGeminiPrompt() {
+            const isRespondent = appState.position === 'respondent';
+            const hasOpposingSubmissions = isRespondent && appState.opposingSubmissions && appState.opposingSubmissions.trim();
+            
+            let prompt = `You are an expert legal practitioner specializing in systematic document analysis, methodical legal reasoning, and persuasive legal argumentation. You excel at structured, phase-based execution and comprehensive legal submissions.
+
+**CRITICAL STRATEGIC CONTEXT**
+This governs ALL phases of your work:
+
+**PRIMARY GOAL**: ${isRespondent ? 'Persuade the court to DENY the relief sought' : 'Persuade the court to GRANT the relief sought'}
+**YOUR POSITION**: ${isRespondent ? 'Respondent/Defendant opposing relief' : 'Applicant/Plaintiff seeking relief'} 
+**STYLE REFERENCE**: Template shows ideal depth and sophistication for legal reasoning
+**SUPPORTING CONTEXT**: All materials must serve your persuasive goal
+
+**TASK OVERVIEW**
+Transform the provided bullet-point arguments into a comprehensive, persuasive legal submission that ${isRespondent ? 'systematically defeats the opposing relief request' : 'compellingly establishes entitlement to relief'}. This is NOT just formatting - you must elaborate, develop, and synthesize arguments using all provided context.
+
+**METHODOLOGY**
+Think carefully and systematically through each phase. Your approach must be STRATEGIC (serving your persuasive goal), COMPREHENSIVE (transforming bullet points into multiple paragraphs), CONTEXTUAL (using ALL provided information), and PRECEDENT-GUIDED (following template sophistication).
+
+**PHASE 1: STRATEGIC TEMPLATE ANALYSIS**
+Analyze the provided precedent document as your REFERENCE for fully-developed legal reasoning:
+- Map section headings and hierarchical structure
+- Catalog citation formats and legal reference patterns  
+- Document paragraph organization and transition methodologies
+- Identify tone formality and professional language conventions
+- Record formatting specifications: numbering, bullets, emphasis, spacing
+- **CRITICAL**: Study persuasive techniques and depth of analysis as your model
+- **ESSENTIAL**: Understand how bullet points would be expanded into comprehensive arguments`;
+
+            // Add opposing submissions analysis for respondents
+            if (hasOpposingSubmissions) {
+                prompt += `
+
+**PHASE 1A: OPPOSING SUBMISSIONS ANALYSIS**
+You are responding to the applicant's submissions. Systematic identification required:
+
+**Applicant's Submissions to Defeat:**
+${appState.opposingSubmissions}
+
+**Analysis Requirements:**
+- Systematically identify each opposing argument
+- Note evidence and authorities cited by applicant
+- Plan comprehensive rebuttals using your bullet points and context
+- Ensure NO opposing point goes unaddressed`;
+            }
+
+            // Add pleadings analysis phase if provided
+            if (appState.plaintiffPleadings || appState.defendantPleadings) {
+                prompt += `\n\n**PHASE 1B: PLEADINGS STRATEGIC ANALYSIS**
+Review case pleadings to ensure your arguments align with ${isRespondent ? 'your defensive strategy' : 'your case theory'}:`;
+                
+                if (appState.plaintiffPleadings) {
+                    prompt += `\n\n1. **Plaintiff's Pleadings Analysis**: 
+   - Identify causes of action, material allegations, legal theories
+   - Strategic Focus: ${isRespondent ? 'Note weaknesses and points to rebut' : 'Ensure consistency with your case theory'}
+   - Content: ${appState.plaintiffPleadings}`;
+                }
+                
+                if (appState.defendantPleadings) {
+                    prompt += `\n\n2. **Defendant's Pleadings Analysis**: 
+   - Identify defenses, counter-claims, factual disputes
+   - Strategic Focus: ${isRespondent ? 'Build on established defenses' : 'Address defensive positions'}
+   - Content: ${appState.defendantPleadings}`;
+                }
+            }
+
+            prompt += `\n\n**PHASE 2: STRATEGIC CONTENT INVENTORY**
+Systematically catalog all materials with focus on your ${isRespondent ? 'defensive' : 'offensive'} strategy:
+
+**2.1 Chronological Foundation:** 
+${appState.chronology}
+*Strategic Use: ${isRespondent ? 'Identify facts that undermine applicant\'s case or support denial of relief' : 'Highlight facts that establish grounds for relief'}*
+
+**2.2 Legal Arguments Framework (TO BE ELABORATED):** 
+${appState.arguments}
+*Critical: These bullet points must be transformed into MULTIPLE PARAGRAPHS of sophisticated legal analysis*
+
+**2.3 Template Precedent (YOUR QUALITY REFERENCE):**
+${appState.templateText}
+*Use as model for depth, style, and persuasive sophistication*`;
+
+            // Add relief sought section if provided
+            if (appState.summonsApplication) {
+                prompt += `\n\n**2.4 Ultimate Strategic Target (Prayers for Relief):**
+${appState.summonsApplication}
+*Strategic Goal: ${isRespondent ? 'Every argument must serve to DENY this relief' : 'Every argument must serve to OBTAIN this relief'}*`;
+            }
+
+            if (appState.instructions) {
+                prompt += `\n\n**2.5 Special Instructions:** 
+${appState.instructions}`;
+            }
+
+            prompt += `\n\n**PHASE 3: STRATEGIC SYNTHESIS AND DRAFTING**
+Execute comprehensive legal submission that ${isRespondent ? 'systematically defeats the relief sought' : 'compellingly establishes entitlement to relief'}:
+
+**3.1 Strategic Template Implementation**
+- Study template as model for sophisticated legal reasoning depth
+- Replicate structural format while serving your persuasive goal
+- Apply all formatting conventions identified in Phase 1
+- Match template's professional tone and analytical sophistication
+
+**3.2 Argument Elaboration and Development**
+- Transform EACH bullet point into MULTIPLE PARAGRAPHS of legal analysis
+- Use ALL provided context (chronology, pleadings, evidence) to support arguments
+- Ensure every elaborated argument advances your strategic goal
+- Integrate chronological narrative that supports your position
+
+**3.3 Strategic Quality Assurance**
+- Verify every elaborated argument serves your persuasive goal
+- Ensure comprehensive development worthy of template standard
+- Maintain formal, precise legal language throughout
+- Structure response with numbered sections matching template format`;
+
+            if (appState.plaintiffPleadings || appState.defendantPleadings) {
+                prompt += `\n- **Case Theory Strategic Alignment**: Ensure all elaborated arguments align with established case theories and serve your ${isRespondent ? 'defensive' : 'offensive'} strategy`;
+            }
+
+            if (appState.summonsApplication) {
+                prompt += `\n- **Relief ${isRespondent ? 'Opposition' : 'Support'}**: Every elaborated argument must advance your goal of ${isRespondent ? 'defeating' : 'obtaining'} the prayers for relief`;
+            }
+            
+            // Add opposing submissions requirements for respondents
+            if (hasOpposingSubmissions) {
+                prompt += `
+- **Comprehensive Rebuttal**: Address EVERY argument in the opposing submissions through your elaborated arguments`;
+            }
+
+            // Add verification phase if checklist is requested
+            if (appState.includeChecklist) {
+                prompt += `\n\n**PHASE 4: ANTI-HALLUCINATION AND VERIFICATION PROTOCOL**
+
+**CRITICAL ACCURACY REQUIREMENTS - MANDATORY COMPLIANCE:**
+1. Use ONLY facts, dates, and information explicitly provided in the input sections
+2. NEVER fabricate case citations, exhibit details, or witness statements
+3. NEVER invent legal precedents, case names, or statutory references
+4. NEVER guess at amounts, dates, or legal standards not provided
+5. When information is missing, use placeholders: [LAWYER TO PROVIDE: description]
+6. When evidence is mentioned but details unclear: [VERIFY: Exhibit X - details needed]
+7. When amounts are uncertain: [AMOUNT TO BE CONFIRMED: context]
+8. Accuracy is paramount - placeholders are preferred over fabrications
+
+**Deep Think Protocol**: Before including any specific facts, figures, or references, carefully consider: "Was this explicitly provided in the input materials?" If uncertain, use a placeholder.
+
+SYSTEMATIC VERIFICATION PROCESS:
+Step 1: Complete initial draft using available information only
+Step 2: Generate comprehensive verification table
+Step 3: Identify gaps and missing information
+Step 4: Insert appropriate placeholders for missing items
+Step 5: Update verification table with completion status
+Step 6: Generate placeholder tracking for lawyer action
+Step 7: Final accuracy review
+
+=== COMPREHENSIVE VERIFICATION TABLE ===
+
+| Category | Verification Item | Status | Draft Location | Notes/Action |
+|----------|------------------|--------|----------------|--------------|`;
+
+                prompt += `
+| **ARGUMENTS** |
+| Primary breach of contract argument | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Confidentiality breach argument | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Implied covenant argument | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| All legal reasoning points addressed | [✅/⚠️/❌] | [Multiple locations] | [Notes] |`;
+
+                prompt += `
+| **EVIDENCE** |
+| Contract terms and clauses cited | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| All exhibit references included | [✅/⚠️/❌] | [Multiple locations] | [Notes] |
+| Case law citations verified | [✅/⚠️/❌] | [Multiple locations] | [Notes] |
+| Witness/deposition references | [✅/⚠️/❌] | [Multiple locations] | [Notes] |`;
+
+                prompt += `
+| **CHRONOLOGY** |
+| Contract execution date (March 15, 2024) | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Breach discovery timeline | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Cure period and termination dates | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| All key chronological events | [✅/⚠️/❌] | [Multiple locations] | [Notes] |`;
+
+                if (appState.plaintiffPleadings || appState.defendantPleadings) {
+                    prompt += `
+| **CASE THEORY** |
+| Plaintiff's causes of action alignment | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Response to defendant's defenses | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Cross-complaint considerations | [✅/⚠️/❌] | [Section, ¶] | [Notes] |`;
+                }
+
+                if (appState.summonsApplication) {
+                    prompt += `
+| **RELIEF SOUGHT** |
+| Monetary damages supported | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| Injunctive relief basis established | [✅/⚠️/❌] | [Section, ¶] | [Notes] |
+| All prayers for relief addressed | [✅/⚠️/❌] | [Multiple locations] | [Notes] |`;
+                }
+
+                prompt += `
+| **TEMPLATE COMPLIANCE** |
+| Document structure matches template | [✅/⚠️/❌] | [Entire document] | [Notes] |
+| Citation format consistency | [✅/⚠️/❌] | [Throughout] | [Notes] |
+| Professional tone maintained | [✅/⚠️/❌] | [Throughout] | [Notes] |
+
+STATUS INDICATORS:
+✅ = Complete and accurate
+⚠️ = Partial completion or contains placeholders
+❌ = Missing or not addressed
+
+=== PLACEHOLDER TRACKING TABLE ===
+
+| Draft Location | Placeholder Used | Specific Information Needed | Priority Level |
+|---------------|------------------|---------------------------|----------------|
+| [Section, Paragraph] | [LAWYER TO PROVIDE: xxx] | [Detailed description] | HIGH/MEDIUM/LOW |
+| [Section, Paragraph] | [VERIFY: xxx] | [Detailed description] | HIGH/MEDIUM/LOW |
+| [Section, Paragraph] | [AMOUNT TO BE CONFIRMED] | [Detailed description] | HIGH/MEDIUM/LOW |
+
+PRIORITY GUIDELINES:
+• HIGH: Essential for filing, case outcome dependent
+• MEDIUM: Important for case strength, should verify
+• LOW: Enhancement details, can refine later
+
+=== COMPLETION SUMMARY ===
+
+Total Verification Items: [Number]
+✅ Complete: [Number] ([Percentage]%)
+⚠️ Partial/Placeholders: [Number] ([Percentage]%)  
+❌ Missing: [Number] ([Percentage]%)
+
+Total Placeholders Inserted: [Number]
+High Priority Placeholders: [Number]
+Medium Priority Placeholders: [Number]
+Low Priority Placeholders: [Number]
+
+ACCURACY CERTIFICATION:
+☐ No facts were fabricated or hallucinated
+☐ All information traces to provided input sections
+☐ Placeholders clearly mark missing information
+☐ Draft ready for lawyer review and completion
+
+SELF-CORRECTION PROTOCOL - FINAL ACCURACY REVIEW:
+Before submission, confirm:
+1. No invented case names, exhibit details, or dates
+2. All placeholders appropriately marked and explained
+3. Verification percentages accurately calculated
+4. Lawyer action items clearly prioritized`;
+
+            // Add opposing submissions verification table for respondents
+            if (hasOpposingSubmissions) {
+                prompt += `
+
+=== OPPOSING SUBMISSIONS RESPONSE VERIFICATION ===
+
+| Opposing Argument | Our Response Location | Rebuttal Type | Strength Assessment |
+|------------------|----------------------|---------------|--------------------|
+| [Applicant's Point 1] | [Section X, ¶Y] | [Direct/Indirect] | [Strong/Adequate/Weak] |
+| [Applicant's Point 2] | [Section X, ¶Y] | [Direct/Indirect] | [Strong/Adequate/Weak] |
+| [Continue for each opposing argument] | | | |
+
+REBUTTAL TYPE DEFINITIONS:
+• DIRECT: Argument directly contradicts opposing point with contrary evidence/law
+• INDIRECT: Argument undermines opposing point through alternative legal reasoning
+
+STRENGTH ASSESSMENT CRITERIA:
+• STRONG: Compelling rebuttal that decisively defeats the opposing argument
+• ADEQUATE: Reasonable response that effectively addresses the opposing point
+• WEAK: Insufficient response that may leave opposing argument viable
+
+COMPLETENESS VERIFICATION:
+☐ Every opposing argument systematically identified and addressed
+☐ No opposing points remain unrebutted
+☐ Response locations clearly referenced with section and paragraph numbers
+☐ All rebuttals advance the strategic goal of denying relief`;
+            }
+
+            prompt += `\n\n**EXECUTION PHASE**
+Proceed with strategic synthesis following all phases methodically. Your mission: transform bullet points into comprehensive, persuasive legal submission that ${isRespondent ? 'systematically defeats the relief sought' : 'compellingly establishes entitlement to relief'}. Use the template as your model for sophistication and depth. Ensure formal, precise legal language throughout. Structure your response with clear numbered sections and headings that match the template format.`;
+
+            return prompt;
+        }
+
+        // Enhanced quality scoring system with anti-hallucination measures
+        function calculateQualityScore(prompt) {
+            let score = 0;
+            const checks = [];
+
+            // Core content inclusion (40 points total)
+            if (prompt.includes(appState.chronology.substring(0, 50))) {
+                score += 12;
+                checks.push('✓ Chronology integrated');
+            } else {
+                checks.push('⚠ Chronology integration incomplete');
+            }
+
+            if (prompt.includes(appState.arguments.substring(0, 50))) {
+                score += 12;
+                checks.push('✓ Arguments integrated');
+            } else {
+                checks.push('⚠ Arguments integration incomplete');
+            }
+
+            if (prompt.includes(appState.templateText.substring(0, 50))) {
+                score += 16;
+                checks.push('✓ Template referenced');
+            } else {
+                checks.push('⚠ Template reference incomplete');
+            }
+
+            // Advanced legal context (25 points total)
+            if (appState.plaintiffPleadings && prompt.includes(appState.plaintiffPleadings.substring(0, 30))) {
+                score += 8;
+                checks.push('✓ Plaintiff pleadings integrated');
+            } else if (appState.plaintiffPleadings) {
+                checks.push('⚠ Plaintiff pleadings not fully integrated');
+            } else {
+                score += 8; // Full points if not provided
+            }
+
+            if (appState.defendantPleadings && prompt.includes(appState.defendantPleadings.substring(0, 30))) {
+                score += 8;
+                checks.push('✓ Defendant pleadings integrated');
+            } else if (appState.defendantPleadings) {
+                checks.push('⚠ Defendant pleadings not fully integrated');
+            } else {
+                score += 8; // Full points if not provided
+            }
+
+            if (appState.summonsApplication && prompt.includes(appState.summonsApplication.substring(0, 30))) {
+                score += 9;
+                checks.push('✓ Relief prayers integrated');
+            } else if (appState.summonsApplication) {
+                checks.push('⚠ Relief prayers not fully integrated');
+            } else {
+                score += 9; // Full points if not provided
+            }
+
+            // Anti-hallucination protocol compliance (20 points)
+            if (appState.includeChecklist) {
+                const hasAntiHallucination = prompt.includes('ANTI-HALLUCINATION') || 
+                                            prompt.includes('critical_accuracy_requirements') ||
+                                            prompt.includes('ACCURACY REQUIREMENTS');
+                if (hasAntiHallucination) {
+                    score += 8;
+                    checks.push('✓ Anti-hallucination protocol included');
+                } else {
+                    checks.push('⚠ Anti-hallucination protocol missing');
+                }
+
+                const hasPlaceholderTracking = prompt.includes('PLACEHOLDER TRACKING') || 
+                                             prompt.includes('placeholder tracking') ||
+                                             prompt.includes('PLACEHOLDER') && prompt.includes('TABLE');
+                if (hasPlaceholderTracking) {
+                    score += 7;
+                    checks.push('✓ Placeholder tracking system included');
+                } else {
+                    checks.push('⚠ Placeholder tracking system missing');
+                }
+
+                const hasVerificationTable = prompt.includes('VERIFICATION') && 
+                                            (prompt.includes('TABLE') || prompt.includes('CHECKLIST'));
+                if (hasVerificationTable) {
+                    score += 5;
+                    checks.push('✓ Verification table format included');
+                } else {
+                    checks.push('⚠ Verification table format missing');
+                }
+            } else {
+                score += 20; // Full points if not requested
+            }
+
+            // Quality assurance features (10 points)
+            if (appState.includeChecklist) {
+                const hasSelfCorrection = prompt.includes('SELF-CORRECTION') || 
+                                        prompt.includes('review your draft') ||
+                                        prompt.includes('final corrections') ||
+                                        prompt.includes('accuracy review');
+                if (hasSelfCorrection) {
+                    score += 5;
+                    checks.push('✓ Self-correction protocol included');
+                } else {
+                    checks.push('⚠ Self-correction protocol missing');
+                }
+
+                const hasAccuracyCertification = prompt.includes('ACCURACY CERTIFICATION') || 
+                                               prompt.includes('ACCURACY REQUIREMENTS') ||
+                                               prompt.includes('No facts were fabricated') ||
+                                               prompt.includes('accuracy review');
+                if (hasAccuracyCertification) {
+                    score += 5;
+                    checks.push('✓ Accuracy certification included');
+                } else {
+                    checks.push('⚠ Accuracy certification missing');
+                }
+            } else {
+                score += 10; // Full points if not requested
+            }
+
+            // Instructions inclusion (3 points)
+            if (appState.instructions && prompt.includes(appState.instructions.substring(0, 20))) {
+                score += 3;
+                checks.push('✓ Special instructions included');
+            } else if (appState.instructions) {
+                checks.push('⚠ Special instructions not included');
+            } else {
+                score += 3; // Full points if no instructions provided
+            }
+
+            // Proper structure (2 points)
+            const hasStructure = prompt.includes('PHASE') || prompt.includes('TEMPLATE ANALYSIS') || prompt.includes('INSTRUCTIONS');
+            if (hasStructure) {
+                score += 2;
+                checks.push('✓ Structured format maintained');
+            } else {
+                checks.push('⚠ Structure could be improved');
+            }
+
+            return {
+                score: Math.min(score, 100),
+                checks: checks
+            };
+        }
+
+        function updateQualityIndicator(platform, qualityData) {
+            const scoreFill = document.getElementById(`${platform}ScoreFill`);
+            const scoreText = document.getElementById(`${platform}ScoreText`);
+            const qualityText = document.getElementById(`${platform}QualityText`);
+
+            // Animate score bar
+            setTimeout(() => {
+                scoreFill.style.width = `${qualityData.score}%`;
+                scoreText.textContent = `${qualityData.score}%`;
+                qualityText.innerHTML = qualityData.checks.join('<br>');
+            }, 200);
+        }
+
+        // Output tab management
+        function updateOutputTabs() {
+            const platform = appState.platform;
+            
+            // Update tab visibility and default selection
+            if (platform === 'both') {
+                switchOutputTab('comparison');
+            } else {
+                switchOutputTab(platform);
+            }
+        }
+
+        function switchOutputTab(outputType) {
+            elements.outputTabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.output === outputType);
+            });
+
+            elements.outputContents.forEach(content => {
+                content.style.display = 'none';
+            });
+
+            document.getElementById(`${outputType}Output`).style.display = 'block';
+        }
+
+        // Copy functionality
+        async function handleCopy(e, buttonKey) {
+            const button = e.target;
+            let textToCopy = '';
+
+            if (buttonKey.includes('claude')) {
+                textToCopy = appState.claudePrompt;
+            } else {
+                textToCopy = appState.geminiPrompt;
+            }
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = buttonKey.includes('claude') ? 'Copy for claude.ai' : 'Copy for gemini.google.com';
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+
+        // Enhanced session management with file download
+        function saveSession() {
+            const timestamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+/, '');
+            const sessionData = {
+                version: "1.0",
+                appName: "Submissions Synthesizer",
+                platform: appState.platform,
+                position: appState.position,
+                chronology: appState.chronology,
+                arguments: appState.arguments,
+                templateText: appState.templateText,
+                instructions: appState.instructions,
+                opposingSubmissions: appState.opposingSubmissions,
+                plaintiffPleadings: appState.plaintiffPleadings,
+                defendantPleadings: appState.defendantPleadings,
+                summonsApplication: appState.summonsApplication,
+                includeChecklist: appState.includeChecklist,
+                timestamp: new Date().toISOString(),
+                exportedAt: timestamp
+            };
+
+            try {
+                // Save to localStorage as backup (auto-save)
+                localStorage.setItem('legalPromptGenerator_session', JSON.stringify(sessionData));
+                
+                // Create downloadable file
+                const blob = new Blob([JSON.stringify(sessionData, null, 2)], {
+                    type: 'application/json'
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `legal-prompt-session-${timestamp}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                elements.sessionButtons.save.textContent = 'Downloaded!';
+                setTimeout(() => {
+                    elements.sessionButtons.save.textContent = 'Export Session File';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to save session:', err);
+                elements.sessionButtons.save.textContent = 'Export Failed';
+                setTimeout(() => {
+                    elements.sessionButtons.save.textContent = 'Export Session File';
+                }, 2000);
+            }
+        }
+
+        function loadSession() {
+            // Trigger file picker
+            const fileInput = document.getElementById('sessionFileInput');
+            fileInput.click();
+        }
+        
+        function loadSessionFromFile(file) {
+            if (!file) return;
+            
+            console.log('Loading session file:', file.name, file.type, file.size);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const fileContent = e.target.result;
+                    console.log('File content preview:', fileContent.substring(0, 200));
+                    
+                    const sessionData = JSON.parse(fileContent);
+                    console.log('Parsed session data:', sessionData);
+                    
+                    // Validate session file format with detailed logging
+                    const isValid = validateSessionFile(sessionData);
+                    console.log('Session validation result:', isValid, sessionData);
+                    
+                    if (!isValid) {
+                        console.error('Session validation failed for:', sessionData);
+                        elements.sessionButtons.load.textContent = 'Invalid File';
+                        setTimeout(() => {
+                            elements.sessionButtons.load.textContent = 'Load Session File';
+                        }, 2000);
+                        return;
+                    }
+                    
+                    // Restore form data
+                    appState.platform = sessionData.platform || 'claude';
+                    appState.position = sessionData.position || 'applicant';
+                    appState.chronology = sessionData.chronology || '';
+                    appState.arguments = sessionData.arguments || '';
+                    appState.templateText = sessionData.templateText || '';
+                    appState.instructions = sessionData.instructions || '';
+                    appState.opposingSubmissions = sessionData.opposingSubmissions || '';
+                    appState.plaintiffPleadings = sessionData.plaintiffPleadings || '';
+                    appState.defendantPleadings = sessionData.defendantPleadings || '';
+                    appState.summonsApplication = sessionData.summonsApplication || '';
+                    appState.includeChecklist = sessionData.includeChecklist !== undefined ? sessionData.includeChecklist : true;
+
+                    // Update UI
+                    document.querySelector(`input[name="platform"][value="${appState.platform}"]`).checked = true;
+                    document.querySelector(`input[name="position"][value="${appState.position}"]`).checked = true;
+                    elements.chronologyTextarea.value = appState.chronology;
+                    elements.argumentsTextarea.value = appState.arguments;
+                    elements.templateTextarea.value = appState.templateText;
+                    elements.instructionsTextarea.value = appState.instructions;
+                    elements.opposingSubmissionsTextarea.value = appState.opposingSubmissions;
+                    elements.plaintiffPleadingsTextarea.value = appState.plaintiffPleadings;
+                    elements.defendantPleadingsTextarea.value = appState.defendantPleadings;
+                    elements.summonsApplicationTextarea.value = appState.summonsApplication;
+                    elements.includeChecklistCheckbox.checked = appState.includeChecklist;
+
+                    // Update character counts
+                    updateCharacterCount('chronology', appState.chronology);
+                    updateCharacterCount('arguments', appState.arguments);
+                    updateCharacterCount('template', appState.templateText);
+                    updateCharacterCount('instructions', appState.instructions);
+                    updateCharacterCount('opposingSubmissions', appState.opposingSubmissions);
+                    updateCharacterCount('plaintiffPleadings', appState.plaintiffPleadings);
+                    updateCharacterCount('defendantPleadings', appState.defendantPleadings);
+                    updateCharacterCount('summonsApplication', appState.summonsApplication);
+                    
+                    // Update position-dependent UI
+                    updatePositionDependentUI();
+
+                    // Refresh all feedback indicators after loading
+                    refreshAllFeedback();
+
+                    elements.sessionButtons.load.textContent = 'Loaded!';
+                    setTimeout(() => {
+                        elements.sessionButtons.load.textContent = 'Load Session File';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to parse session file:', err);
+                    console.error('File content that failed to parse:', e.target.result);
+                    elements.sessionButtons.load.textContent = 'Parse Error';
+                    setTimeout(() => {
+                        elements.sessionButtons.load.textContent = 'Load Session File';
+                    }, 3000);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function validateSessionFile(data) {
+            console.log('Validating session file:', data);
+            
+            // Check for required fields and structure
+            const hasAppName = data && (data.appName === "Submissions Synthesizer" || data.appName === "Legal Prompt Generator");
+            const hasChronology = data && data.chronology !== undefined;
+            const isObject = typeof data === 'object' && data !== null;
+            
+            console.log('Validation details:', {
+                hasData: !!data,
+                hasAppName,
+                hasChronology,
+                isObject,
+                appName: data?.appName
+            });
+            
+            return data && (hasAppName || hasChronology) && isObject;
+        }
+        
+        // Auto-load from localStorage on page load with improved error handling
+        function autoLoadSession() {
+            try {
+                const sessionData = localStorage.getItem('legalPromptGenerator_session');
+                console.log('Auto-loading session data:', sessionData ? 'Found' : 'None');
+                
+                if (sessionData) {
+                    const data = JSON.parse(sessionData);
+                    console.log('Parsed auto-load data:', data);
+                    
+                    if (validateSessionFile(data)) {
+                        console.log('Auto-loading valid session data');
+                        loadSessionData(data);
+                    } else {
+                        console.warn('Auto-load data failed validation, clearing localStorage');
+                        localStorage.removeItem('legalPromptGenerator_session');
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to auto-load session:', err);
+                // Clear corrupted localStorage data
+                try {
+                    localStorage.removeItem('legalPromptGenerator_session');
+                    console.log('Cleared corrupted localStorage data');
+                } catch (clearError) {
+                    console.error('Failed to clear localStorage:', clearError);
+                }
+            }
+        }
+        
+        function loadSessionData(data) {
+            // Restore form data
+            appState.platform = data.platform || 'claude';
+            appState.position = data.position || 'applicant';
+            appState.chronology = data.chronology || '';
+            appState.arguments = data.arguments || '';
+            appState.templateText = data.templateText || '';
+            appState.instructions = data.instructions || '';
+            appState.opposingSubmissions = data.opposingSubmissions || '';
+            appState.plaintiffPleadings = data.plaintiffPleadings || '';
+            appState.defendantPleadings = data.defendantPleadings || '';
+            appState.summonsApplication = data.summonsApplication || '';
+            appState.includeChecklist = data.includeChecklist !== undefined ? data.includeChecklist : true;
+
+            // Update UI
+            document.querySelector(`input[name="platform"][value="${appState.platform}"]`).checked = true;
+            document.querySelector(`input[name="position"][value="${appState.position}"]`).checked = true;
+            elements.chronologyTextarea.value = appState.chronology;
+            elements.argumentsTextarea.value = appState.arguments;
+            elements.templateTextarea.value = appState.templateText;
+            elements.instructionsTextarea.value = appState.instructions;
+            elements.opposingSubmissionsTextarea.value = appState.opposingSubmissions;
+            elements.plaintiffPleadingsTextarea.value = appState.plaintiffPleadings;
+            elements.defendantPleadingsTextarea.value = appState.defendantPleadings;
+            elements.summonsApplicationTextarea.value = appState.summonsApplication;
+            elements.includeChecklistCheckbox.checked = appState.includeChecklist;
+
+            // Update character counts
+            updateCharacterCount('chronology', appState.chronology);
+            updateCharacterCount('arguments', appState.arguments);
+            updateCharacterCount('template', appState.templateText);
+            updateCharacterCount('instructions', appState.instructions);
+            updateCharacterCount('opposingSubmissions', appState.opposingSubmissions);
+            updateCharacterCount('plaintiffPleadings', appState.plaintiffPleadings);
+            updateCharacterCount('defendantPleadings', appState.defendantPleadings);
+            updateCharacterCount('summonsApplication', appState.summonsApplication);
+            
+            // Update position-dependent UI
+            updatePositionDependentUI();
+
+            // Refresh all feedback indicators after loading
+            refreshAllFeedback();
+        }
+
+        function clearAllFields() {
+            if (confirm('Are you sure you want to clear all fields? This action cannot be undone.')) {
+                // Reset state
+                appState = {
+                    platform: 'claude',
+                    position: 'applicant',
+                    chronology: '',
+                    arguments: '',
+                    templateText: '',
+                    instructions: '',
+                    opposingSubmissions: '',
+                    plaintiffPleadings: '',
+                    defendantPleadings: '',
+                    summonsApplication: '',
+                    includeChecklist: true,
+                    templateFile: null,
+                    claudePrompt: '',
+                    geminiPrompt: ''
+                };
+
+                // Reset UI with debug logging
+                console.log('Clearing UI elements...');
+                document.querySelector('input[name="platform"][value="claude"]').checked = true;
+                document.querySelector('input[name="position"][value="applicant"]').checked = true;
+                elements.chronologyTextarea.value = '';
+                elements.argumentsTextarea.value = '';
+                elements.templateTextarea.value = '';
+                elements.instructionsTextarea.value = '';
+                elements.opposingSubmissionsTextarea.value = '';
+                elements.plaintiffPleadingsTextarea.value = '';
+                elements.defendantPleadingsTextarea.value = '';
+                
+                // Debug the summonsApplication clearing
+                console.log('summonsApplicationTextarea element:', elements.summonsApplicationTextarea);
+                console.log('Current value before clear:', elements.summonsApplicationTextarea?.value);
+                if (elements.summonsApplicationTextarea) {
+                    elements.summonsApplicationTextarea.value = '';
+                    console.log('Value after clear:', elements.summonsApplicationTextarea.value);
+                } else {
+                    console.error('summonsApplicationTextarea element not found!');
+                }
+                
+                elements.includeChecklistCheckbox.checked = true;
+                elements.templateFile.value = '';
+                
+                // Update position-dependent UI
+                updatePositionDependentUI();
+
+                // Reset counters
+                Object.entries(elements.counters).forEach(([key, counter]) => {
+                    counter.textContent = '0 characters';
+                    counter.className = 'character-counter';
+                });
+
+                // Hide output section
+                elements.outputSection.classList.remove('show');
+                elements.uploadStatus.style.display = 'none';
+
+                // Clear localStorage to prevent auto-restore on refresh
+                localStorage.removeItem('legalPromptGenerator_session');
+                
+                // Refresh all feedback indicators after clearing
+                refreshAllFeedback();
+            }
+        }
+
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <!-- Copyright Footer -->
+    <footer style="background: #f8f9fa; border-top: 1px solid #e5e7eb; text-align: center; padding: 2rem 1rem; margin-top: 3rem; color: #6b7280;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <p style="margin-bottom: 0.5rem; font-weight: 500;">© 2025 Hubris Works Private Limited. All rights reserved.</p>
+            <p style="font-size: 0.9rem; opacity: 0.8;">Submissions Synthesizer v1.0</p>
+        </div>
+    </footer>
+</body>
+</html>
