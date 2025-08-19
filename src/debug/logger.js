@@ -5,13 +5,7 @@
 
 class Logger {
   constructor() {
-    this.logLevel = this.getLogLevel();
-    this.logs = [];
-    this.maxLogs = 1000;
-    this.sessionId = this.generateSessionId();
-    this.startTime = Date.now();
-    
-    // Log levels
+    // Log levels (must be defined first!)
     this.LEVELS = {
       DEBUG: 0,
       INFO: 1,
@@ -19,6 +13,12 @@ class Logger {
       ERROR: 3,
       CRITICAL: 4
     };
+    
+    this.logLevel = this.getLogLevel();
+    this.logs = [];
+    this.maxLogs = 1000;
+    this.sessionId = this.generateSessionId();
+    this.startTime = Date.now();
     
     // Performance tracking
     this.performanceMarks = new Map();

@@ -8,6 +8,18 @@
   
   // Initialize debugging system
   function initializeDebugging() {
+    // Check if logger is available
+    if (typeof logger === 'undefined') {
+      console.warn('Logger not available, skipping debug system initialization');
+      return;
+    }
+    
+    // Check if ErrorHandler is available
+    if (typeof ErrorHandler === 'undefined') {
+      console.warn('ErrorHandler not available, skipping debug system initialization');
+      return;
+    }
+    
     // Create error handler with logger
     const errorHandler = new ErrorHandler(logger);
     
@@ -251,8 +263,10 @@
     
     // Clear button
     panel.querySelector('#debug-clear').addEventListener('click', () => {
-      logger.clearLogs();
-      updateDebugContent();
+      if (typeof logger !== 'undefined') {
+        logger.clearLogs();
+        updateDebugContent();
+      }
     });
   }
   
@@ -277,7 +291,7 @@
   
   function updateLogsContent() {
     const logEntries = document.getElementById('log-entries');
-    if (!logEntries) return;
+    if (!logEntries || typeof logger === 'undefined') return;
     
     const logs = logger.logs.slice(-50); // Show last 50 logs
     
@@ -306,7 +320,7 @@
   
   function updateMetricsContent() {
     const metricsContent = document.getElementById('metrics-content');
-    if (!metricsContent) return;
+    if (!metricsContent || typeof logger === 'undefined' || typeof errorHandler === 'undefined') return;
     
     const metrics = logger.getMetrics();
     const errorStats = errorHandler.getErrorStats();
@@ -342,7 +356,7 @@
   
   function updateMemoryContent() {
     const memoryContent = document.getElementById('memory-content');
-    if (!memoryContent) return;
+    if (!memoryContent || typeof logger === 'undefined') return;
     
     const memoryInfo = logger.logMemoryUsage();
     
@@ -379,6 +393,11 @@
   }
   
   function setupPerformanceMonitoring() {
+    if (typeof logger === 'undefined') {
+      console.warn('Logger not available for performance monitoring');
+      return;
+    }
+    
     // Monitor page performance
     if ('PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
@@ -416,14 +435,21 @@
     
     // Monitor memory periodically
     setInterval(() => {
-      const memoryInfo = logger.logMemoryUsage();
-      if (memoryInfo && memoryInfo.used > memoryInfo.limit * 0.8) {
-        logger.warn('High memory usage detected', memoryInfo);
+      if (typeof logger !== 'undefined') {
+        const memoryInfo = logger.logMemoryUsage();
+        if (memoryInfo && memoryInfo.used > memoryInfo.limit * 0.8) {
+          logger.warn('High memory usage detected', memoryInfo);
+        }
       }
     }, 30000); // Check every 30 seconds
   }
   
   function enhanceUIInteractionLogging() {
+    if (typeof logger === 'undefined') {
+      console.warn('Logger not available for UI interaction logging');
+      return;
+    }
+    
     // Log form interactions
     const inputs = document.querySelectorAll('input, textarea, select');
     inputs.forEach(input => {
@@ -460,14 +486,24 @@
     });
   }
   
-  // Initialize when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeDebugging);
-  } else {
-    initializeDebugging();
+  // Initialize with dependency checking
+  function tryInitialize() {
+    // Check if all required dependencies are available
+    if (typeof logger !== 'undefined' && typeof ErrorHandler !== 'undefined') {
+      initializeDebugging();
+      // Initialize UI interaction logging after a delay to ensure all elements are present
+      setTimeout(enhanceUIInteractionLogging, 1000);
+    } else {
+      console.log('Debug dependencies not ready, retrying in 100ms...');
+      setTimeout(tryInitialize, 100);
+    }
   }
   
-  // Initialize UI interaction logging after a delay to ensure all elements are present
-  setTimeout(enhanceUIInteractionLogging, 1000);
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInitialize);
+  } else {
+    tryInitialize();
+  }
   
 })();
