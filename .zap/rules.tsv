@@ -1,0 +1,54 @@
+# ZAP Scanning Rules
+# This file configures OWASP ZAP security scanning rules
+# Format: RULE_ID\tTHRESHOLD\tACTION
+
+# Content Security Policy
+10038	MEDIUM	REPORT
+
+# Cross Site Scripting
+40012	HIGH	REPORT
+40014	HIGH	REPORT
+40016	HIGH	REPORT
+40017	HIGH	REPORT
+
+# SQL Injection
+40018	HIGH	REPORT
+
+# Path Traversal
+6	HIGH	REPORT
+
+# Remote File Inclusion
+7	HIGH	REPORT
+
+# Server Side Include
+40009	MEDIUM	REPORT
+
+# Cross Site Request Forgery
+10202	MEDIUM	REPORT
+
+# Cookie Security
+10010	LOW	REPORT
+10011	LOW	REPORT
+
+# Information Disclosure
+10024	LOW	REPORT
+10025	LOW	REPORT
+
+# Weak Authentication
+10101	MEDIUM	REPORT
+
+# Session Management
+10112	MEDIUM	REPORT
+
+# HTTPS Security Headers
+10021	LOW	REPORT
+10020	LOW	REPORT
+
+# Application Error Disclosure
+90022	MEDIUM	REPORT
+
+# Directory Browsing
+0	MEDIUM	REPORT
+
+# Backup File Disclosure
+10095	MEDIUM	REPORT

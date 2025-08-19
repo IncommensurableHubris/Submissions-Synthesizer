@@ -81,6 +81,42 @@ coverage/
 # nyc test coverage
 .nyc_output
 
+# Test output and reports
+test-results/
+reports/
+playwright-report/
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# Security scan results
+semgrep.sarif
+*.sarif
+
+# Debug and error files
+debug.log
+error.log
+emergency-state*
+critical-errors*
+
+# Test artifacts
+screenshots/
+videos/
+trace-*
+
+# Lighthouse reports
+lighthouse-report.html
+lighthouse-report.json
+
+# Environment variables for testing
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ESLint cache
+.eslintcache
+
 # Local development files
 *.local
 

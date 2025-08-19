@@ -1,0 +1,402 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run security scans daily at 3 AM UTC
+    - cron: '0 3 * * *'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Static Application Security Testing (SAST)
+  sast-scan:
+    name: Static Security Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint security scan
+        run: |
+          npx eslint . --ext .js,.html --config .eslintrc.security.js --format json --output-file reports/eslint-security.json || true
+
+      - name: Run semgrep security scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/javascript
+          generateSarif: "1"
+
+      - name: Upload SARIF file
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: semgrep.sarif
+
+      - name: Upload security scan results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: sast-results
+          path: |
+            reports/eslint-security.json
+            semgrep.sarif
+
+  # Dependency vulnerability scanning
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --json > reports/npm-audit.json || true
+          npm audit --audit-level moderate
+
+      - name: Run Snyk security test
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --json-file-output=reports/snyk-results.json
+        continue-on-error: true
+
+      - name: Upload dependency scan results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-scan-results
+          path: |
+            reports/npm-audit.json
+            reports/snyk-results.json
+
+  # Secret scanning
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Run GitLeaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Scan for hardcoded secrets
+        run: |
+          mkdir -p reports
+          echo "Scanning for potential secrets..."
+          
+          # Check for common secret patterns
+          grep -r -i "password\|secret\|key\|token" . \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude-dir=reports \
+            --exclude="*.md" \
+            --exclude="*.yml" \
+            > reports/potential-secrets.txt || true
+          
+          # Check for API keys patterns
+          grep -r -E "(api_key|apikey|access_token|auth_token)" . \
+            --exclude-dir=node_modules \
+            --exclude-dir=.git \
+            --exclude-dir=reports \
+            >> reports/potential-secrets.txt || true
+
+      - name: Upload secret scan results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: secret-scan-results
+          path: reports/potential-secrets.txt
+
+  # Dynamic Application Security Testing (DAST)
+  dast-scan:
+    name: Dynamic Security Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm run serve &
+          sleep 10
+          curl -f http://localhost:8080 || exit 1
+
+      - name: Run OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.8.0
+        with:
+          target: 'http://localhost:8080'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+
+      - name: Upload DAST results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dast-results
+          path: report_html.html
+
+  # Content Security Policy validation
+  csp-validation:
+    name: CSP Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Content Security Policy
+        run: |
+          mkdir -p reports
+          
+          # Check if CSP is implemented
+          if grep -q "Content-Security-Policy" index.html; then
+            echo "CSP found in HTML" > reports/csp-validation.txt
+            grep "Content-Security-Policy" index.html >> reports/csp-validation.txt
+          else
+            echo "WARNING: No Content-Security-Policy found in HTML" > reports/csp-validation.txt
+          fi
+          
+          # Check for unsafe inline scripts
+          if grep -q "script.*src=" index.html; then
+            echo "External scripts found:" >> reports/csp-validation.txt
+            grep "script.*src=" index.html >> reports/csp-validation.txt
+          fi
+          
+          # Check for inline event handlers
+          if grep -qE "on(click|load|error|submit|change)" index.html; then
+            echo "WARNING: Inline event handlers found:" >> reports/csp-validation.txt
+            grep -E "on(click|load|error|submit|change)" index.html >> reports/csp-validation.txt
+          fi
+
+      - name: Upload CSP validation results
+        uses: actions/upload-artifact@v3
+        with:
+          name: csp-validation-results
+          path: reports/csp-validation.txt
+
+  # File integrity checks
+  file-integrity:
+    name: File Integrity Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check file permissions
+        run: |
+          mkdir -p reports
+          echo "Checking file permissions..." > reports/file-integrity.txt
+          
+          # Check for world-writable files
+          find . -type f -perm -o+w | head -20 >> reports/file-integrity.txt || true
+          
+          # Check for executable files that shouldn't be
+          find . -name "*.html" -executable >> reports/file-integrity.txt || true
+          find . -name "*.css" -executable >> reports/file-integrity.txt || true
+          find . -name "*.json" -executable >> reports/file-integrity.txt || true
+
+      - name: Validate file types
+        run: |
+          echo "Validating file types..." >> reports/file-integrity.txt
+          
+          # Check for suspicious file extensions
+          find . -name "*.exe" -o -name "*.bat" -o -name "*.cmd" -o -name "*.scr" | head -10 >> reports/file-integrity.txt || true
+          
+          # Validate that JS files are actually JavaScript
+          for js_file in $(find . -name "*.js" | head -5); do
+            if file "$js_file" | grep -v "ASCII\|UTF-8\|text"; then
+              echo "Suspicious JS file: $js_file" >> reports/file-integrity.txt
+            fi
+          done
+
+      - name: Check for hidden files
+        run: |
+          echo "Checking for hidden files..." >> reports/file-integrity.txt
+          find . -name ".*" -type f | grep -v ".git" | head -20 >> reports/file-integrity.txt || true
+
+      - name: Upload file integrity results
+        uses: actions/upload-artifact@v3
+        with:
+          name: file-integrity-results
+          path: reports/file-integrity.txt
+
+  # Browser security headers test
+  security-headers:
+    name: Security Headers Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: |
+          npm run serve &
+          sleep 10
+
+      - name: Test security headers
+        run: |
+          mkdir -p reports
+          echo "Testing security headers..." > reports/security-headers.txt
+          
+          # Test various security headers
+          curl -I http://localhost:8080 > reports/response-headers.txt
+          
+          # Check for security headers
+          headers=(
+            "X-Content-Type-Options"
+            "X-Frame-Options"
+            "X-XSS-Protection"
+            "Strict-Transport-Security"
+            "Content-Security-Policy"
+            "Referrer-Policy"
+          )
+          
+          for header in "${headers[@]}"; do
+            if grep -qi "$header" reports/response-headers.txt; then
+              echo "✓ $header found" >> reports/security-headers.txt
+            else
+              echo "✗ $header missing" >> reports/security-headers.txt
+            fi
+          done
+
+      - name: Upload security headers results
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-headers-results
+          path: |
+            reports/security-headers.txt
+            reports/response-headers.txt
+
+  # Security test summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [sast-scan, dependency-scan, secret-scan, dast-scan, csp-validation, file-integrity, security-headers]
+    if: always()
+    steps:
+      - name: Download all security artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate security summary
+        run: |
+          echo "# Security Scan Summary" > security-summary.md
+          echo "" >> security-summary.md
+          echo "## Scan Results" >> security-summary.md
+          echo "- SAST Scan: ${{ needs.sast-scan.result }}" >> security-summary.md
+          echo "- Dependency Scan: ${{ needs.dependency-scan.result }}" >> security-summary.md
+          echo "- Secret Scan: ${{ needs.secret-scan.result }}" >> security-summary.md
+          echo "- DAST Scan: ${{ needs.dast-scan.result }}" >> security-summary.md
+          echo "- CSP Validation: ${{ needs.csp-validation.result }}" >> security-summary.md
+          echo "- File Integrity: ${{ needs.file-integrity.result }}" >> security-summary.md
+          echo "- Security Headers: ${{ needs.security-headers.result }}" >> security-summary.md
+          echo "" >> security-summary.md
+          
+          # Add critical findings summary
+          echo "## Critical Findings" >> security-summary.md
+          if [ -f secret-scan-results/potential-secrets.txt ]; then
+            secret_count=$(wc -l < secret-scan-results/potential-secrets.txt)
+            echo "- Potential secrets found: $secret_count" >> security-summary.md
+          fi
+          
+          if [ -f security-headers-results/security-headers.txt ]; then
+            missing_headers=$(grep -c "✗" security-headers-results/security-headers.txt || echo "0")
+            echo "- Missing security headers: $missing_headers" >> security-summary.md
+          fi
+          
+          echo "" >> security-summary.md
+          echo "## Recommendations" >> security-summary.md
+          echo "- Review and address any critical vulnerabilities" >> security-summary.md
+          echo "- Ensure all security headers are properly configured" >> security-summary.md
+          echo "- Regularly update dependencies to patch known vulnerabilities" >> security-summary.md
+
+      - name: Upload security summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-summary
+          path: security-summary.md
+
+      - name: Comment PR with security summary
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔒 Security Scan Results\n\n${summary}`
+            });

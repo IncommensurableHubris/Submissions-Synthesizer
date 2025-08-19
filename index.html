@@ -2900,6 +2900,214 @@ Proceed with strategic synthesis following all phases methodically. Your mission
         document.addEventListener('DOMContentLoaded', init);
     </script>
 
+    <!-- Debug and Quality Assurance System -->
+    <script src="./src/debug/logger.js"></script>
+    <script src="./src/utils/errorHandler.js"></script>
+    <script src="./src/debug/debug-integration.js"></script>
+
+    <!-- Automatic Quality Checks -->
+    <script>
+        // URL parameter-based testing
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Enable test mode with ?test parameter
+        if (urlParams.has('test')) {
+            console.log('🧪 Test mode enabled - Running basic quality checks...');
+            
+            // Basic functionality test
+            setTimeout(() => {
+                try {
+                    // Test state management
+                    if (typeof appState !== 'undefined') {
+                        console.log('✅ Application state initialized');
+                    } else {
+                        console.error('❌ Application state not found');
+                    }
+                    
+                    // Test DOM elements
+                    const requiredElements = ['chronology', 'arguments', 'templateText', 'generateBtn'];
+                    let missingElements = [];
+                    
+                    requiredElements.forEach(id => {
+                        if (!document.getElementById(id)) {
+                            missingElements.push(id);
+                        }
+                    });
+                    
+                    if (missingElements.length === 0) {
+                        console.log('✅ All required DOM elements found');
+                    } else {
+                        console.error('❌ Missing DOM elements:', missingElements);
+                    }
+                    
+                    // Test file processing libraries
+                    if (typeof pdfjsLib !== 'undefined') {
+                        console.log('✅ PDF.js library loaded');
+                    } else {
+                        console.warn('⚠️ PDF.js library not loaded');
+                    }
+                    
+                    if (typeof mammoth !== 'undefined') {
+                        console.log('✅ Mammoth.js library loaded');
+                    } else {
+                        console.warn('⚠️ Mammoth.js library not loaded');
+                    }
+                    
+                    // Memory check
+                    if (performance.memory) {
+                        const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                        console.log(`💾 Memory usage: ${memoryMB}MB`);
+                        
+                        if (memoryMB > 100) {
+                            console.warn('⚠️ High memory usage detected');
+                        }
+                    }
+                    
+                    console.log('🏁 Basic quality check complete');
+                    
+                } catch (error) {
+                    console.error('❌ Quality check failed:', error);
+                }
+            }, 1000);
+        }
+        
+        // Auto-enable debug mode for development
+        if (urlParams.has('debug') || localStorage.getItem('debug-mode') === 'true') {
+            console.log('🔧 Debug mode enabled');
+            if (typeof logger !== 'undefined') {
+                logger.info('Debug mode activated via URL parameter');
+            }
+        }
+        
+        // Performance monitoring
+        window.addEventListener('load', () => {
+            // Monitor page load performance
+            const loadTime = performance.now();
+            if (loadTime > 3000) {
+                console.warn('⚠️ Slow page load detected:', Math.round(loadTime), 'ms');
+            } else {
+                console.log('✅ Page loaded in', Math.round(loadTime), 'ms');
+            }
+            
+            // Monitor memory every 30 seconds if debug mode is active
+            if (urlParams.has('debug')) {
+                setInterval(() => {
+                    if (performance.memory) {
+                        const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                        const limitMB = Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024);
+                        const usagePercent = Math.round((memoryMB / limitMB) * 100);
+                        
+                        if (usagePercent > 80) {
+                            console.warn(`⚠️ High memory usage: ${usagePercent}% (${memoryMB}MB of ${limitMB}MB)`);
+                        }
+                    }
+                }, 30000);
+            }
+        });
+        
+        // Automatic session backup every 5 minutes
+        setInterval(() => {
+            if (typeof appState !== 'undefined' && typeof saveSession === 'function') {
+                // Only backup if there's meaningful content
+                const hasContent = appState.chronology || appState.arguments || appState.templateText;
+                if (hasContent) {
+                    try {
+                        // Save to backup key
+                        const backupKey = 'submissionsSession_backup';
+                        const sessionData = {
+                            ...appState,
+                            timestamp: Date.now(),
+                            autoSaved: true
+                        };
+                        localStorage.setItem(backupKey, JSON.stringify(sessionData));
+                        
+                        if (typeof logger !== 'undefined') {
+                            logger.debug('Auto-backup completed');
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Auto-backup failed:', error);
+                    }
+                }
+            }
+        }, 300000); // 5 minutes
+        
+        // File upload security monitoring
+        document.addEventListener('change', (event) => {
+            if (event.target.type === 'file' && event.target.files.length > 0) {
+                const file = event.target.files[0];
+                
+                // Security checks
+                const dangerousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.js', '.vbs'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (dangerousExtensions.includes(fileExtension)) {
+                    console.error('🚨 SECURITY ALERT: Dangerous file type detected:', file.name);
+                    event.target.value = ''; // Clear the input
+                    alert('Security Warning: This file type is not allowed for safety reasons.');
+                    return;
+                }
+                
+                // Size check
+                const maxSize = 25 * 1024 * 1024; // 25MB
+                if (file.size > maxSize) {
+                    console.warn('⚠️ Large file detected:', Math.round(file.size / 1024 / 1024), 'MB');
+                }
+                
+                if (typeof logger !== 'undefined') {
+                    logger.info('File upload initiated', {
+                        filename: file.name,
+                        size: file.size,
+                        type: file.type
+                    });
+                }
+            }
+        });
+        
+        // Visual quality indicator
+        function showQualityIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'quality-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 10000;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-family: monospace;
+                display: none;
+            `;
+            document.body.appendChild(indicator);
+            
+            // Show indicator when debug mode is active
+            if (urlParams.has('debug')) {
+                indicator.style.display = 'block';
+                indicator.textContent = '🔧 Debug Mode';
+                
+                // Update with system status
+                setInterval(() => {
+                    if (performance.memory) {
+                        const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                        const limitMB = Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024);
+                        const usagePercent = Math.round((memoryMB / limitMB) * 100);
+                        
+                        let status = '🟢';
+                        if (usagePercent > 90) status = '🔴';
+                        else if (usagePercent > 80) status = '🟡';
+                        
+                        indicator.textContent = `${status} ${usagePercent}% (${memoryMB}MB)`;
+                    }
+                }, 2000);
+            }
+        }
+        
+        // Initialize quality indicator after page load
+        window.addEventListener('load', showQualityIndicator);
+    </script>
+
     <!-- Copyright Footer -->
     <footer style="background: #f8f9fa; border-top: 1px solid #e5e7eb; text-align: center; padding: 2rem 1rem; margin-top: 3rem; color: #6b7280;">
         <div style="max-width: 1200px; margin: 0 auto;">
