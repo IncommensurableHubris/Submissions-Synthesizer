@@ -786,16 +786,16 @@
         <div class="privacy-notice">
             <div class="privacy-icon">🔒</div>
             <div class="privacy-text">
-                <h3>100% Private & Secure</h3>
+                <h3>100% Private &amp; Secure</h3>
                 <p>This application runs entirely in your browser with no internet connection required. All document processing happens locally on your device. Your legal documents and data never leave your computer and are never transmitted to any external servers.</p>
             </div>
         </div>
 
         <div class="session-controls">
             <div>
-                <button class="session-btn" id="loadSession">Load Session File</button>
+                <button type="button" class="session-btn" id="loadSession">Load Session File</button>
                 <input type="file" id="sessionFileInput" accept=".json" style="display: none;">
-                <button class="session-btn" id="saveSession">Export Session File</button>
+                <button type="button" class="session-btn" id="saveSession">Export Session File</button>
             </div>
             <div>
                 <span class="privacy-badge tooltip">🛡️ Privacy Guaranteed
@@ -810,7 +810,7 @@
                         • All libraries are loaded locally (no CDN dependencies)
                     </span>
                 </span>
-                <button class="session-btn" id="clearAll">Clear All Fields</button>
+                <button type="button" class="session-btn" id="clearAll">Clear All Fields</button>
             </div>
         </div>
 
@@ -912,7 +912,7 @@
 
             <div class="input-group">
                 <label for="arguments" class="input-label">
-                    Arguments & Evidence <span class="required">*</span>
+                    Arguments &amp; Evidence <span class="required">*</span>
                     <span class="section-status" id="argumentsStatus">
                         <span class="status-indicator status-required">Required</span>
                     </span>
@@ -923,7 +923,7 @@
                     <div class="character-counter" id="argumentsCounter">0 characters</div>
                     <div class="auto-save-indicator" id="argumentsAutoSave">✓ Auto-saved</div>
                 </div>
-                <div class="success-notification" id="argumentsSuccess">✓ Arguments & Evidence section completed</div>
+                <div class="success-notification" id="argumentsSuccess">✓ Arguments &amp; Evidence section completed</div>
             </div>
 
             <div class="input-group">
@@ -936,15 +936,15 @@
                 <div class="input-description">Provide a precedent document template to match format and style.</div>
                 
                 <div class="template-tabs">
-                    <button class="template-tab active" data-tab="upload">File Upload</button>
-                    <button class="template-tab" data-tab="paste">Manual Paste</button>
+                    <button type="button" class="template-tab active" data-tab="upload">File Upload</button>
+                    <button type="button" class="template-tab" data-tab="paste">Manual Paste</button>
                 </div>
 
                 <div class="template-content active" id="upload">
                     <div class="file-upload-section" id="fileUpload">
                         <input type="file" id="templateFile" class="file-input" accept=".docx,.pdf,.txt">
                         <div class="upload-icon">📄</div>
-                        <div class="upload-text">Click to upload or drag & drop</div>
+                        <div class="upload-text">Click to upload or drag &amp; drop</div>
                         <div class="upload-description">Supports .docx, .pdf, and .txt files</div>
                     </div>
                     <div id="uploadStatus" class="input-description" style="margin-top: 1rem; display: none;"></div>
@@ -1019,8 +1019,8 @@
                 <div class="input-description">Provide pleadings documents to give AI full context of case theories and material facts.</div>
                 
                 <div class="template-tabs" id="pleadingsTabs">
-                    <button class="template-tab active" data-tab="plaintiff-pleadings">Plaintiff's Pleadings</button>
-                    <button class="template-tab" data-tab="defendant-pleadings">Defendant's Pleadings</button>
+                    <button type="button" class="template-tab active" data-tab="plaintiff-pleadings">Plaintiff's Pleadings</button>
+                    <button type="button" class="template-tab" data-tab="defendant-pleadings">Defendant's Pleadings</button>
                 </div>
 
                 <div class="template-content active" id="plaintiff-pleadings">
@@ -1069,12 +1069,12 @@
 
         <div class="validation-warnings" id="validationWarnings">
             <div class="warning-item">⚠️ Chronology section is empty</div>
-            <div class="warning-item">⚠️ Arguments & Evidence section is empty</div>
+            <div class="warning-item">⚠️ Arguments &amp; Evidence section is empty</div>
             <div class="warning-item">⚠️ No template precedent provided</div>
         </div>
 
         <div class="generate-section">
-            <button class="generate-btn" id="generateBtn">
+            <button type="button" class="generate-btn" id="generateBtn">
                 <span id="generateText">Generate Optimized Prompts</span>
                 <span class="loading" id="generateLoading" style="display: none;"></span>
             </button>
@@ -1094,9 +1094,9 @@
             </div>
             
             <div class="output-tabs" id="outputTabs">
-                <button class="output-tab active" data-output="claude">Claude Sonnet 4.0</button>
-                <button class="output-tab" data-output="gemini">Gemini 2.5 Pro</button>
-                <button class="output-tab" data-output="comparison">Side-by-Side</button>
+                <button type="button" class="output-tab active" data-output="claude">Claude Sonnet 4.0</button>
+                <button type="button" class="output-tab" data-output="gemini">Gemini 2.5 Pro</button>
+                <button type="button" class="output-tab" data-output="comparison">Side-by-Side</button>
             </div>
 
             <div id="claudeOutput" class="output-content">
@@ -1113,7 +1113,7 @@
                         Quality analysis will appear here after generation.
                     </div>
                 </div>
-                <button class="copy-btn" id="copyClaude">Copy for claude.ai</button>
+                <button type="button" class="copy-btn" id="copyClaude">Copy for claude.ai</button>
             </div>
 
             <div id="geminiOutput" class="output-content" style="display: none;">
@@ -1130,7 +1130,7 @@
                         Quality analysis will appear here after generation.
                     </div>
                 </div>
-                <button class="copy-btn" id="copyGemini">Copy for gemini.google.com</button>
+                <button type="button" class="copy-btn" id="copyGemini">Copy for gemini.google.com</button>
             </div>
 
             <div id="comparisonOutput" class="output-content" style="display: none;">
@@ -1138,12 +1138,12 @@
                     <div>
                         <h3 style="margin-bottom: 0.5rem;">Claude Sonnet 4.0 Prompt</h3>
                         <div class="prompt-output" id="claudePromptComparison"></div>
-                        <button class="copy-btn" id="copyClaude2">Copy for claude.ai</button>
+                        <button type="button" class="copy-btn" id="copyClaude2">Copy for claude.ai</button>
                     </div>
                     <div>
                         <h3 style="margin-bottom: 0.5rem;">Gemini 2.5 Pro Prompt</h3>
                         <div class="prompt-output" id="geminiPromptComparison"></div>
-                        <button class="copy-btn" id="copyGemini2">Copy for gemini.google.com</button>
+                        <button type="button" class="copy-btn" id="copyGemini2">Copy for gemini.google.com</button>
                     </div>
                 </div>
             </div>

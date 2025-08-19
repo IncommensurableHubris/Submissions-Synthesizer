@@ -5,7 +5,7 @@
 
 (function() {
   'use strict';
-  
+
   // Initialize debugging system
   function initializeDebugging() {
     // Check if logger is available
@@ -13,31 +13,31 @@
       console.warn('Logger not available, skipping debug system initialization');
       return;
     }
-    
+
     // Check if ErrorHandler is available
     if (typeof ErrorHandler === 'undefined') {
       console.warn('ErrorHandler not available, skipping debug system initialization');
       return;
     }
-    
+
     // Create error handler with logger
     const errorHandler = new ErrorHandler(logger);
-    
+
     // Make globally available
     window.errorHandler = errorHandler;
-    
+
     // Enhance existing functions with debugging
     enhanceAppFunctions();
-    
+
     // Setup debug UI
     setupDebugUI();
-    
+
     // Setup performance monitoring
     setupPerformanceMonitoring();
-    
+
     logger.info('Debug system initialized');
   }
-  
+
   function enhanceAppFunctions() {
     // Enhance file upload function
     if (window.handleFileUpload) {
@@ -46,20 +46,20 @@
         const fileName = event.target.files[0]?.name;
         const fileSize = event.target.files[0]?.size;
         const fileType = event.target.files[0]?.type;
-        
+
         logger.startTimer('fileUpload');
         logger.info('File upload started', { fileName, fileSize, fileType });
-        
+
         try {
           const result = await originalHandleFileUpload.call(this, event);
           const duration = logger.endTimer('fileUpload')?.duration;
-          
+
           logger.logFileUpload(fileName, fileSize, fileType, duration, true);
           return result;
         } catch (error) {
           const duration = logger.endTimer('fileUpload')?.duration;
           logger.logFileUpload(fileName, fileSize, fileType, duration, false, error);
-          
+
           return await errorHandler.handleError(error, {
             operation: 'fileUpload',
             fileName,
@@ -69,30 +69,30 @@
         }
       };
     }
-    
+
     // Enhance prompt generation
     if (window.generatePrompts) {
       const originalGeneratePrompts = window.generatePrompts;
       window.generatePrompts = function() {
         logger.startTimer('promptGeneration');
         logger.info('Prompt generation started');
-        
+
         try {
           const result = originalGeneratePrompts.call(this);
           const duration = logger.endTimer('promptGeneration')?.duration;
-          
+
           // Calculate input/output sizes
           const inputSize = JSON.stringify(window.appState || {}).length;
           const claudeOutput = document.getElementById('claudePromptOutput')?.textContent?.length || 0;
           const geminiOutput = document.getElementById('geminiPromptOutput')?.textContent?.length || 0;
           const outputSize = claudeOutput + geminiOutput;
-          
+
           logger.logPromptGeneration(window.appState?.platform, inputSize, outputSize, duration, true);
           return result;
         } catch (error) {
           const duration = logger.endTimer('promptGeneration')?.duration;
           logger.logPromptGeneration(window.appState?.platform, 0, 0, duration, false, error);
-          
+
           errorHandler.handleError(error, {
             operation: 'promptGeneration',
             platform: window.appState?.platform
@@ -100,7 +100,7 @@
         }
       };
     }
-    
+
     // Enhance session management
     if (window.saveSession) {
       const originalSaveSession = window.saveSession;
@@ -115,7 +115,7 @@
         }
       };
     }
-    
+
     if (window.loadSession) {
       const originalLoadSession = window.loadSession;
       window.loadSession = function() {
@@ -129,18 +129,18 @@
         }
       };
     }
-    
+
     // Enhance validation
     if (window.updateValidation) {
       const originalUpdateValidation = window.updateValidation;
       window.updateValidation = function() {
         try {
           const result = originalUpdateValidation.call(this);
-          
+
           // Log validation results
           const warnings = document.getElementById('validationWarnings')?.children?.length || 0;
           logger.debug('Validation updated', { warningCount: warnings });
-          
+
           return result;
         } catch (error) {
           errorHandler.handleError(error, { operation: 'validation' });
@@ -148,14 +148,14 @@
       };
     }
   }
-  
+
   function setupDebugUI() {
     // Only show debug UI if debug mode is enabled
-    if (!window.location.search.includes('debug') && 
+    if (!window.location.search.includes('debug') &&
         localStorage.getItem('debug-log-level') !== 'DEBUG') {
       return;
     }
-    
+
     // Create debug panel
     const debugPanel = document.createElement('div');
     debugPanel.id = 'debug-panel';
@@ -175,7 +175,7 @@
       flex-direction: column;
       overflow: hidden;
     `;
-    
+
     debugPanel.innerHTML = `
       <div style="background: #333; padding: 8px; display: flex; justify-content: space-between; align-items: center;">
         <span>Debug Console</span>
@@ -201,12 +201,12 @@
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(debugPanel);
-    
+
     // Setup debug panel functionality
     setupDebugPanelControls(debugPanel);
-    
+
     // Create debug toggle button
     const debugToggle = document.createElement('button');
     debugToggle.id = 'debug-toggle';
@@ -224,18 +224,18 @@
       z-index: 9999;
       font-size: 12px;
     `;
-    
+
     debugToggle.addEventListener('click', () => {
       debugPanel.style.display = debugPanel.style.display === 'none' ? 'flex' : 'none';
       updateDebugContent();
     });
-    
+
     document.body.appendChild(debugToggle);
-    
+
     // Update debug content periodically
     setInterval(updateDebugContent, 1000);
   }
-  
+
   function setupDebugPanelControls(panel) {
     // Tab switching
     const tabs = panel.querySelectorAll('.debug-tab');
@@ -243,24 +243,24 @@
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        
+
         const contents = panel.querySelectorAll('.debug-tab-content');
         contents.forEach(c => c.style.display = 'none');
-        
+
         const targetContent = panel.querySelector(`#debug-${tab.dataset.tab}`);
         if (targetContent) {
           targetContent.style.display = 'block';
         }
-        
+
         updateDebugContent();
       });
     });
-    
+
     // Close button
     panel.querySelector('#debug-close').addEventListener('click', () => {
       panel.style.display = 'none';
     });
-    
+
     // Clear button
     panel.querySelector('#debug-clear').addEventListener('click', () => {
       if (typeof logger !== 'undefined') {
@@ -269,13 +269,13 @@
       }
     });
   }
-  
+
   function updateDebugContent() {
     const panel = document.getElementById('debug-panel');
-    if (!panel || panel.style.display === 'none') return;
-    
+    if (!panel || panel.style.display === 'none') {return;}
+
     const activeTab = panel.querySelector('.debug-tab.active')?.dataset.tab;
-    
+
     switch (activeTab) {
       case 'logs':
         updateLogsContent();
@@ -288,13 +288,13 @@
         break;
     }
   }
-  
+
   function updateLogsContent() {
     const logEntries = document.getElementById('log-entries');
-    if (!logEntries || typeof logger === 'undefined') return;
-    
+    if (!logEntries || typeof logger === 'undefined') {return;}
+
     const logs = logger.logs.slice(-50); // Show last 50 logs
-    
+
     logEntries.innerHTML = logs.map(log => {
       const color = {
         DEBUG: '#888',
@@ -303,7 +303,7 @@
         ERROR: '#F44336',
         CRITICAL: '#D32F2F'
       }[log.level] || '#FFF';
-      
+
       return `
         <div style="margin-bottom: 4px; color: ${color};">
           <span style="color: #AAA;">${new Date(log.timestamp).toLocaleTimeString()}</span>
@@ -313,18 +313,18 @@
         </div>
       `;
     }).join('');
-    
+
     // Auto-scroll to bottom
     logEntries.scrollTop = logEntries.scrollHeight;
   }
-  
+
   function updateMetricsContent() {
     const metricsContent = document.getElementById('metrics-content');
-    if (!metricsContent || typeof logger === 'undefined' || typeof errorHandler === 'undefined') return;
-    
+    if (!metricsContent || typeof logger === 'undefined' || typeof errorHandler === 'undefined') {return;}
+
     const metrics = logger.getMetrics();
     const errorStats = errorHandler.getErrorStats();
-    
+
     metricsContent.innerHTML = `
       <div style="margin-bottom: 8px;">
         <strong>Session:</strong> ${Math.round(metrics.sessionDuration / 1000)}s<br>
@@ -334,7 +334,7 @@
       
       <div style="margin-bottom: 8px;">
         <strong>Log Levels:</strong><br>
-        ${Object.entries(metrics.logsByLevel).map(([level, count]) => 
+        ${Object.entries(metrics.logsByLevel).map(([level, count]) =>
           `<span style="color: ${level === 'ERROR' ? '#F44336' : '#FFF'}">${level}: ${count}</span>`
         ).join('<br>')}
       </div>
@@ -347,25 +347,25 @@
       
       <div>
         <strong>Error Types:</strong><br>
-        ${Object.entries(errorStats.errorCounts).map(([type, count]) => 
+        ${Object.entries(errorStats.errorCounts).map(([type, count]) =>
           `${type}: ${count}`
         ).join('<br>')}
       </div>
     `;
   }
-  
+
   function updateMemoryContent() {
     const memoryContent = document.getElementById('memory-content');
-    if (!memoryContent || typeof logger === 'undefined') return;
-    
+    if (!memoryContent || typeof logger === 'undefined') {return;}
+
     const memoryInfo = logger.logMemoryUsage();
-    
+
     if (memoryInfo) {
       const usedMB = Math.round(memoryInfo.used / 1024 / 1024);
       const totalMB = Math.round(memoryInfo.total / 1024 / 1024);
       const limitMB = Math.round(memoryInfo.limit / 1024 / 1024);
       const usagePercent = Math.round((memoryInfo.used / memoryInfo.limit) * 100);
-      
+
       memoryContent.innerHTML = `
         <div style="margin-bottom: 8px;">
           <strong>Memory Usage:</strong><br>
@@ -391,13 +391,13 @@
       `;
     }
   }
-  
+
   function setupPerformanceMonitoring() {
     if (typeof logger === 'undefined') {
       console.warn('Logger not available for performance monitoring');
       return;
     }
-    
+
     // Monitor page performance
     if ('PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
@@ -411,10 +411,10 @@
           }
         }
       });
-      
+
       observer.observe({ entryTypes: ['navigation'] });
     }
-    
+
     // Monitor long tasks
     if ('PerformanceObserver' in window) {
       const longTaskObserver = new PerformanceObserver((list) => {
@@ -425,14 +425,14 @@
           });
         }
       });
-      
+
       try {
         longTaskObserver.observe({ entryTypes: ['longtask'] });
       } catch (e) {
         // Long task observation not supported
       }
     }
-    
+
     // Monitor memory periodically
     setInterval(() => {
       if (typeof logger !== 'undefined') {
@@ -443,13 +443,13 @@
       }
     }, 30000); // Check every 30 seconds
   }
-  
+
   function enhanceUIInteractionLogging() {
     if (typeof logger === 'undefined') {
       console.warn('Logger not available for UI interaction logging');
       return;
     }
-    
+
     // Log form interactions
     const inputs = document.querySelectorAll('input, textarea, select');
     inputs.forEach(input => {
@@ -463,7 +463,7 @@
         });
       }
     });
-    
+
     // Log button clicks
     const buttons = document.querySelectorAll('button');
     buttons.forEach(button => {
@@ -474,7 +474,7 @@
         });
       });
     });
-    
+
     // Log tab switches
     const tabs = document.querySelectorAll('.template-tab, .output-tab');
     tabs.forEach(tab => {
@@ -485,7 +485,7 @@
       });
     });
   }
-  
+
   // Initialize with dependency checking
   function tryInitialize() {
     // Check if all required dependencies are available
@@ -498,12 +498,12 @@
       setTimeout(tryInitialize, 100);
     }
   }
-  
+
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', tryInitialize);
   } else {
     tryInitialize();
   }
-  
+
 })();

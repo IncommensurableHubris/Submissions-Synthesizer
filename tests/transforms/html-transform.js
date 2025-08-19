@@ -3,22 +3,22 @@
  * Extracts JavaScript from HTML files for testing
  */
 
-const fs = require('fs');
+import fs from 'fs';
 
-module.exports = {
+export default {
   process(src, filename) {
     // Extract script content from HTML
     const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/gi;
     const scripts = [];
     let match;
-    
+
     while ((match = scriptRegex.exec(src)) !== null) {
       scripts.push(match[1]);
     }
-    
+
     // Combine all scripts
     const combinedScript = scripts.join('\n\n');
-    
+
     // Wrap in module exports for Jest
     return `
       module.exports = {

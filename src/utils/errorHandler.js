@@ -11,7 +11,7 @@ class ErrorHandler {
     this.recoveryStrategies = new Map();
     this.setupRecoveryStrategies();
   }
-  
+
   setupRecoveryStrategies() {
     // File upload errors
     this.recoveryStrategies.set('FILE_UPLOAD_ERROR', {
@@ -21,14 +21,14 @@ class ErrorHandler {
       fallback: () => this.showFileUploadFallback(),
       userMessage: 'File upload failed. Please try again or use copy/paste instead.'
     });
-    
+
     // PDF processing errors
     this.recoveryStrategies.set('PDF_PROCESSING_ERROR', {
       retry: false,
       fallback: () => this.suggestManualExtraction(),
       userMessage: 'Unable to extract text from PDF. Please copy and paste the content manually.'
     });
-    
+
     // Session load errors
     this.recoveryStrategies.set('SESSION_LOAD_ERROR', {
       retry: true,
@@ -36,7 +36,7 @@ class ErrorHandler {
       fallback: () => this.createEmptySession(),
       userMessage: 'Session could not be loaded. Starting with a clean form.'
     });
-    
+
     // Prompt generation errors
     this.recoveryStrategies.set('PROMPT_GENERATION_ERROR', {
       retry: true,
@@ -44,14 +44,14 @@ class ErrorHandler {
       fallback: () => this.showBasicPrompt(),
       userMessage: 'Prompt generation encountered an issue. Please check your inputs and try again.'
     });
-    
+
     // Memory errors
     this.recoveryStrategies.set('MEMORY_ERROR', {
       retry: false,
       fallback: () => this.freeMemory(),
       userMessage: 'Running low on memory. Some features may be limited.'
     });
-    
+
     // Network errors (for future API integration)
     this.recoveryStrategies.set('NETWORK_ERROR', {
       retry: true,
@@ -61,38 +61,38 @@ class ErrorHandler {
       userMessage: 'Network connectivity issues detected. Operating in offline mode.'
     });
   }
-  
+
   // Main error handling method
   async handleError(error, context = {}) {
     const errorInfo = this.analyzeError(error, context);
     const errorId = this.generateErrorId();
-    
+
     // Log the error
     this.logger.error('Error occurred', {
       errorId,
       ...errorInfo,
       context
     });
-    
+
     // Update error statistics
     this.updateErrorStats(errorInfo.type);
-    
+
     // Check for critical errors
     if (this.isCriticalError(errorInfo)) {
       this.logger.critical('Critical error detected', { errorId, ...errorInfo });
       return this.handleCriticalError(errorInfo, errorId);
     }
-    
+
     // Attempt recovery
     const recovered = await this.attemptRecovery(errorInfo, errorId);
-    
+
     if (!recovered) {
       this.showUserNotification(errorInfo, errorId);
     }
-    
+
     return { errorId, recovered, errorInfo };
   }
-  
+
   analyzeError(error, context) {
     const errorInfo = {
       message: error.message || 'Unknown error',
@@ -103,11 +103,11 @@ class ErrorHandler {
       url: window.location.href,
       context
     };
-    
+
     // Determine error type and severity
     errorInfo.type = this.categorizeError(error, context);
     errorInfo.severity = this.assessSeverity(error, context);
-    
+
     // Add browser and environment info
     errorInfo.browserInfo = {
       memory: performance.memory ? {
@@ -121,10 +121,10 @@ class ErrorHandler {
       } : null,
       storage: this.getStorageInfo()
     };
-    
+
     return errorInfo;
   }
-  
+
   categorizeError(error, context) {
     if (context.operation) {
       switch (context.operation) {
@@ -135,150 +135,150 @@ class ErrorHandler {
         default: return 'UNKNOWN_ERROR';
       }
     }
-    
+
     // Analyze error message and stack
     const message = error.message?.toLowerCase() || '';
     const stack = error.stack?.toLowerCase() || '';
-    
+
     if (message.includes('out of memory') || message.includes('memory')) {
       return 'MEMORY_ERROR';
     }
-    
+
     if (message.includes('network') || message.includes('fetch')) {
       return 'NETWORK_ERROR';
     }
-    
+
     if (message.includes('pdf') || context.fileName?.endsWith('.pdf')) {
       return 'PDF_PROCESSING_ERROR';
     }
-    
+
     if (message.includes('file') || context.fileName) {
       return 'FILE_UPLOAD_ERROR';
     }
-    
+
     if (stack.includes('localstorage') || stack.includes('session')) {
       return 'SESSION_LOAD_ERROR';
     }
-    
+
     return 'UNKNOWN_ERROR';
   }
-  
+
   assessSeverity(error, context) {
     // Critical: Application cannot continue
-    if (error.name === 'SecurityError' || 
+    if (error.name === 'SecurityError' ||
         error.message?.includes('Critical') ||
         context.critical) {
       return 'critical';
     }
-    
+
     // High: Major functionality broken
     if (error.name === 'TypeError' && error.stack?.includes('Cannot read') ||
         context.operation === 'promptGeneration') {
       return 'high';
     }
-    
+
     // Medium: Feature degraded but application usable
-    if (context.operation === 'fileUpload' || 
+    if (context.operation === 'fileUpload' ||
         context.operation === 'sessionLoad') {
       return 'medium';
     }
-    
+
     // Low: Minor issue or expected error
     return 'low';
   }
-  
+
   isCriticalError(errorInfo) {
     return errorInfo.severity === 'critical' ||
            this.errorCounts.get(errorInfo.type) > 10 ||
-           (performance.memory && 
+           (performance.memory &&
             performance.memory.usedJSHeapSize > performance.memory.jsHeapSizeLimit * 0.9);
   }
-  
+
   async attemptRecovery(errorInfo, errorId) {
     const strategy = this.recoveryStrategies.get(errorInfo.type);
     if (!strategy) {
-      this.logger.warn('No recovery strategy found', { 
-        errorType: errorInfo.type, 
-        errorId 
+      this.logger.warn('No recovery strategy found', {
+        errorType: errorInfo.type,
+        errorId
       });
       return false;
     }
-    
-    this.logger.info('Attempting error recovery', { 
-      errorType: errorInfo.type, 
+
+    this.logger.info('Attempting error recovery', {
+      errorType: errorInfo.type,
       strategy: strategy.retry ? 'retry' : 'fallback',
-      errorId 
+      errorId
     });
-    
+
     // Try retry with backoff if configured
     if (strategy.retry && strategy.maxRetries) {
       const retryCount = this.errorCounts.get(errorInfo.type) || 0;
-      
+
       if (retryCount < strategy.maxRetries) {
         const delay = strategy.backoff ? strategy.backoff[Math.min(retryCount, strategy.backoff.length - 1)] : 1000;
-        
-        this.logger.info('Retrying operation', { 
-          errorType: errorInfo.type, 
+
+        this.logger.info('Retrying operation', {
+          errorType: errorInfo.type,
           retryCount: retryCount + 1,
           delay,
-          errorId 
+          errorId
         });
-        
+
         await this.delay(delay);
         return true; // Let the caller retry
       }
     }
-    
+
     // Execute fallback strategy
     if (strategy.fallback) {
       try {
         await strategy.fallback();
-        this.logger.info('Fallback strategy executed', { 
-          errorType: errorInfo.type, 
-          errorId 
+        this.logger.info('Fallback strategy executed', {
+          errorType: errorInfo.type,
+          errorId
         });
         return true;
       } catch (fallbackError) {
-        this.logger.error('Fallback strategy failed', { 
-          errorType: errorInfo.type, 
+        this.logger.error('Fallback strategy failed', {
+          errorType: errorInfo.type,
           fallbackError: fallbackError.message,
-          errorId 
+          errorId
         });
       }
     }
-    
+
     return false;
   }
-  
+
   async handleCriticalError(errorInfo, errorId) {
     // Save current state before potential crash
     this.saveEmergencyState();
-    
+
     // Clear memory if possible
     if (errorInfo.type === 'MEMORY_ERROR') {
       this.freeMemory();
     }
-    
+
     // Show critical error message
     this.showCriticalErrorMessage(errorInfo, errorId);
-    
+
     // Send error report (if reporting is enabled)
     this.reportCriticalError(errorInfo, errorId);
-    
+
     return { critical: true, errorId, recovered: false };
   }
-  
+
   // Recovery strategy implementations
   showFileUploadFallback() {
     const uploadTab = document.querySelector('.template-tab[data-tab="upload"]');
     const pasteTab = document.querySelector('.template-tab[data-tab="paste"]');
-    
+
     if (pasteTab && uploadTab) {
       pasteTab.click();
       this.highlightElement(document.getElementById('templateText'));
     }
   }
-  
+
   suggestManualExtraction() {
     const statusElement = document.getElementById('uploadStatus');
     if (statusElement) {
@@ -290,7 +290,7 @@ class ErrorHandler {
       `;
     }
   }
-  
+
   createEmptySession() {
     // Reset to default state
     if (window.appState) {
@@ -307,34 +307,34 @@ class ErrorHandler {
         summonsApplication: '',
         includeChecklist: true
       };
-      
+
       Object.assign(window.appState, defaultState);
-      
+
       // Update UI
       if (window.loadSessionData) {
         window.loadSessionData(defaultState);
       }
     }
   }
-  
+
   showBasicPrompt() {
     const outputSection = document.getElementById('outputSection');
     if (outputSection) {
       outputSection.style.display = 'block';
-      
+
       const claudeOutput = document.getElementById('claudePromptOutput');
       if (claudeOutput) {
         claudeOutput.textContent = 'Basic prompt generation failed. Please check your inputs and try again.';
       }
     }
   }
-  
+
   freeMemory() {
     // Clear large data structures
     if (window.logger) {
       window.logger.clearLogs();
     }
-    
+
     // Clear image caches if any
     const images = document.querySelectorAll('img');
     images.forEach(img => {
@@ -342,24 +342,24 @@ class ErrorHandler {
         URL.revokeObjectURL(img.src);
       }
     });
-    
+
     // Force garbage collection if available
     if (window.gc) {
       window.gc();
     }
-    
+
     this.logger.info('Memory cleanup performed');
   }
-  
+
   enableOfflineMode() {
     // Hide any online-only features
     const onlineElements = document.querySelectorAll('[data-requires-online]');
     onlineElements.forEach(el => el.style.display = 'none');
-    
+
     // Show offline indicator
     this.showOfflineIndicator();
   }
-  
+
   saveEmergencyState() {
     try {
       const emergencyState = {
@@ -369,18 +369,18 @@ class ErrorHandler {
         formData: this.extractFormData(),
         errorId: this.generateErrorId()
       };
-      
+
       localStorage.setItem('emergency-state', JSON.stringify(emergencyState));
       this.logger.info('Emergency state saved');
     } catch (e) {
       this.logger.error('Failed to save emergency state', { error: e.message });
     }
   }
-  
+
   extractFormData() {
     const formData = {};
     const inputs = document.querySelectorAll('input, textarea, select');
-    
+
     inputs.forEach(input => {
       if (input.id) {
         if (input.type === 'checkbox' || input.type === 'radio') {
@@ -390,18 +390,18 @@ class ErrorHandler {
         }
       }
     });
-    
+
     return formData;
   }
-  
+
   // User notification methods
   showUserNotification(errorInfo, errorId) {
     const strategy = this.recoveryStrategies.get(errorInfo.type);
     const message = strategy?.userMessage || 'An unexpected error occurred. Please try again.';
-    
+
     this.createNotificationElement(message, errorInfo.severity, errorId);
   }
-  
+
   showCriticalErrorMessage(errorInfo, errorId) {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
@@ -416,7 +416,7 @@ class ErrorHandler {
       align-items: center;
       justify-content: center;
     `;
-    
+
     const modal = document.createElement('div');
     modal.style.cssText = `
       background: white;
@@ -425,7 +425,7 @@ class ErrorHandler {
       max-width: 500px;
       text-align: center;
     `;
-    
+
     modal.innerHTML = `
       <h3 style="color: #d32f2f; margin-bottom: 1rem;">Critical Error</h3>
       <p>A critical error has occurred and the application may need to restart.</p>
@@ -441,11 +441,11 @@ class ErrorHandler {
         cursor: pointer;
       ">Restart Application</button>
     `;
-    
+
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
   }
-  
+
   createNotificationElement(message, severity, errorId) {
     const notification = document.createElement('div');
     notification.className = `error-notification severity-${severity}`;
@@ -461,7 +461,7 @@ class ErrorHandler {
       max-width: 300px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     `;
-    
+
     notification.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: flex-start;">
         <div>
@@ -484,9 +484,9 @@ class ErrorHandler {
         ">&times;</button>
       </div>
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     // Auto-remove after delay
     setTimeout(() => {
       if (notification.parentElement) {
@@ -494,7 +494,7 @@ class ErrorHandler {
       }
     }, this.getSeverityTimeout(severity));
   }
-  
+
   showOfflineIndicator() {
     const indicator = document.createElement('div');
     indicator.id = 'offline-indicator';
@@ -510,35 +510,35 @@ class ErrorHandler {
       font-size: 0.9em;
     `;
     indicator.textContent = 'Offline Mode';
-    
+
     document.body.appendChild(indicator);
   }
-  
+
   // Utility methods
   generateErrorId() {
     return 'err_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
   }
-  
+
   updateErrorStats(errorType) {
     const count = this.errorCounts.get(errorType) || 0;
     this.errorCounts.set(errorType, count + 1);
   }
-  
+
   delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-  
+
   highlightElement(element) {
-    if (!element) return;
-    
+    if (!element) {return;}
+
     element.style.border = '2px solid #2196F3';
     element.focus();
-    
+
     setTimeout(() => {
       element.style.border = '';
     }, 3000);
   }
-  
+
   getSeverityColor(severity) {
     const colors = {
       low: '#4caf50',
@@ -548,7 +548,7 @@ class ErrorHandler {
     };
     return colors[severity] || colors.medium;
   }
-  
+
   getSeverityLabel(severity) {
     const labels = {
       low: 'Notice',
@@ -558,7 +558,7 @@ class ErrorHandler {
     };
     return labels[severity] || 'Error';
   }
-  
+
   getSeverityTimeout(severity) {
     const timeouts = {
       low: 3000,
@@ -568,7 +568,7 @@ class ErrorHandler {
     };
     return timeouts[severity] || 5000;
   }
-  
+
   getStorageInfo() {
     try {
       const quota = navigator.storage?.estimate?.();
@@ -583,7 +583,7 @@ class ErrorHandler {
       return { error: e.message };
     }
   }
-  
+
   reportCriticalError(errorInfo, errorId) {
     // This would send error reports to a logging service
     // For now, just log locally
@@ -593,7 +593,7 @@ class ErrorHandler {
       timestamp: Date.now()
     });
   }
-  
+
   // Public API
   getErrorStats() {
     return {
@@ -601,7 +601,7 @@ class ErrorHandler {
       totalErrors: Array.from(this.errorCounts.values()).reduce((a, b) => a + b, 0)
     };
   }
-  
+
   clearErrorStats() {
     this.errorCounts.clear();
   }

@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['./.eslintrc.js'],
+  extends: ['./.eslintrc.cjs'],
   plugins: ['security'],
   rules: {
     // Enhanced security rules for security testing

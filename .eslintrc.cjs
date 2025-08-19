@@ -9,8 +9,7 @@ module.exports = {
     'eslint:recommended'
   ],
   plugins: [
-    'security',
-    'html'
+    'security'
   ],
   parserOptions: {
     ecmaVersion: 'latest',
@@ -56,10 +55,6 @@ module.exports = {
     'quotes': ['error', 'single', { 'allowTemplateLiterals': true }]
   },
   overrides: [
-    {
-      files: ['*.html'],
-      processor: 'html/html'
-    },
     {
       files: ['tests/**/*.js'],
       env: {

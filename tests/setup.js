@@ -24,20 +24,20 @@ global.FileReader = class FileReader {
     this.result = null;
     this.error = null;
   }
-  
+
   readAsText(file) {
     setTimeout(() => {
       this.readyState = 2;
       this.result = file.bits.join('');
-      if (this.onload) this.onload({ target: this });
+      if (this.onload) {this.onload({ target: this });}
     }, 0);
   }
-  
+
   readAsArrayBuffer(file) {
     setTimeout(() => {
       this.readyState = 2;
       this.result = new ArrayBuffer(file.size);
-      if (this.onload) this.onload({ target: this });
+      if (this.onload) {this.onload({ target: this });}
     }, 0);
   }
 };
@@ -108,14 +108,14 @@ global.securityTestUtils = {
     };
     return payloads[type] || payloads.script;
   },
-  
+
   createLargePayload: (size = 1000000) => {
     return 'A'.repeat(size);
   },
-  
+
   createMaliciousFile: (type = 'script') => {
-    const content = type === 'script' ? 
-      '<script>alert("malicious")</script>' : 
+    const content = type === 'script' ?
+      '<script>alert("malicious")</script>' :
       'malicious content';
     return new File([content], `malicious.${type}`, { type: `text/${type}` });
   }
@@ -128,7 +128,7 @@ global.performanceTestUtils = {
     await fn();
     return performance.now() - start;
   },
-  
+
   measureMemoryUsage: () => {
     if (performance.memory) {
       return {

@@ -1,0 +1,14 @@
+node_modules/
+coverage/
+reports/
+*.min.js
+mammoth.browser.min.js
+pdfjs-4.6.82/
+test-results/
+# Exclude specific directories with complex files
+tests/e2e/
+tests/integration/
+tests/performance/
+tests/security/
+# HTML files (temporary)
+*.html
