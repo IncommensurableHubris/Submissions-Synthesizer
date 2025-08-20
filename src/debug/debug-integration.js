@@ -39,96 +39,147 @@
   }
 
   function enhanceAppFunctions() {
-    // Enhance file upload function
-    if (window.handleFileUpload) {
-      const originalHandleFileUpload = window.handleFileUpload;
-      window.handleFileUpload = async function(event) {
-        const fileName = event.target.files[0]?.name;
-        const fileSize = event.target.files[0]?.size;
-        const fileType = event.target.files[0]?.type;
+    // Initialize protected namespace for original functions
+    if (!window.__debugOriginals) {
+      window.__debugOriginals = {};
+    }
 
-        logger.startTimer('fileUpload');
-        logger.info('File upload started', { fileName, fileSize, fileType });
+    // Helper function to safely wrap functions
+    function safeWrapFunction(functionName, wrapperFunction) {
+      const func = window[functionName];
+      
+      // Check if function exists and is actually a function
+      if (!func || typeof func !== 'function') {
+        console.log(`${functionName} not available for wrapping`);
+        return false;
+      }
 
+      // Check if already wrapped (prevent double-wrapping)
+      if (func._debugWrapped) {
+        console.log(`${functionName} already wrapped`);
+        return false;
+      }
+
+      // Store original in protected namespace
+      window.__debugOriginals[functionName] = func;
+      
+      // Create wrapper with safety checks
+      const wrappedFunction = function(...args) {
         try {
-          const result = await originalHandleFileUpload.call(this, event);
-          const duration = logger.endTimer('fileUpload')?.duration;
-
-          logger.logFileUpload(fileName, fileSize, fileType, duration, true);
-          return result;
+          return wrapperFunction.call(this, func, ...args);
         } catch (error) {
-          const duration = logger.endTimer('fileUpload')?.duration;
-          logger.logFileUpload(fileName, fileSize, fileType, duration, false, error);
-
-          return await errorHandler.handleError(error, {
-            operation: 'fileUpload',
-            fileName,
-            fileSize,
-            fileType
-          });
+          console.error(`Error in wrapped function ${functionName}:`, error);
+          // Fallback to original function
+          try {
+            return func.apply(this, args);
+          } catch (originalError) {
+            console.error(`Error in original function ${functionName}:`, originalError);
+            throw originalError;
+          }
         }
       };
+
+      // Mark as wrapped and replace
+      wrappedFunction._debugWrapped = true;
+      wrappedFunction._originalFunction = func;
+      window[functionName] = wrappedFunction;
+      
+      console.log(`Successfully wrapped ${functionName}`);
+      return true;
     }
+
+    // Enhance file upload function
+    safeWrapFunction('handleFileUpload', async function(original, event) {
+      const fileName = event.target.files[0]?.name;
+      const fileSize = event.target.files[0]?.size;
+      const fileType = event.target.files[0]?.type;
+
+      logger.startTimer('fileUpload');
+      logger.info('File upload started', { fileName, fileSize, fileType });
+
+      try {
+        const result = await original.call(this, event);
+        const duration = logger.endTimer('fileUpload')?.duration;
+
+        logger.logFileUpload(fileName, fileSize, fileType, duration, true);
+        return result;
+      } catch (error) {
+        const duration = logger.endTimer('fileUpload')?.duration;
+        logger.logFileUpload(fileName, fileSize, fileType, duration, false, error);
+
+        return await errorHandler.handleError(error, {
+          operation: 'fileUpload',
+          fileName,
+          fileSize,
+          fileType
+        });
+      }
+    });
 
     // Enhance prompt generation
-    if (window.generatePrompts) {
-      const originalGeneratePrompts = window.generatePrompts;
-      window.generatePrompts = function() {
-        logger.startTimer('promptGeneration');
-        logger.info('Prompt generation started');
+    safeWrapFunction('generatePrompts', function(original) {
+      logger.startTimer('promptGeneration');
+      logger.info('Prompt generation started');
 
-        try {
-          const result = originalGeneratePrompts.call(this);
-          const duration = logger.endTimer('promptGeneration')?.duration;
+      try {
+        const result = original.call(this);
+        const duration = logger.endTimer('promptGeneration')?.duration;
 
-          // Calculate input/output sizes
-          const inputSize = JSON.stringify(window.appState || {}).length;
-          const claudeOutput = document.getElementById('claudePromptOutput')?.textContent?.length || 0;
-          const geminiOutput = document.getElementById('geminiPromptOutput')?.textContent?.length || 0;
-          const outputSize = claudeOutput + geminiOutput;
+        // Calculate input/output sizes
+        const inputSize = JSON.stringify(window.appState || {}).length;
+        const claudeOutput = document.getElementById('claudePromptOutput')?.textContent?.length || 0;
+        const geminiOutput = document.getElementById('geminiPromptOutput')?.textContent?.length || 0;
+        const outputSize = claudeOutput + geminiOutput;
 
-          logger.logPromptGeneration(window.appState?.platform, inputSize, outputSize, duration, true);
-          return result;
-        } catch (error) {
-          const duration = logger.endTimer('promptGeneration')?.duration;
-          logger.logPromptGeneration(window.appState?.platform, 0, 0, duration, false, error);
+        logger.logPromptGeneration(window.appState?.platform, inputSize, outputSize, duration, true);
+        return result;
+      } catch (error) {
+        const duration = logger.endTimer('promptGeneration')?.duration;
+        logger.logPromptGeneration(window.appState?.platform, 0, 0, duration, false, error);
 
-          errorHandler.handleError(error, {
-            operation: 'promptGeneration',
-            platform: window.appState?.platform
-          });
-        }
-      };
-    }
+        errorHandler.handleError(error, {
+          operation: 'promptGeneration',
+          platform: window.appState?.platform
+        });
+      }
+    });
 
-    // Enhance session management
-    if (window.saveSession) {
-      const originalSaveSession = window.saveSession;
-      window.saveSession = function() {
-        logger.info('Session save started');
-        try {
-          const result = originalSaveSession.call(this);
-          logger.info('Session saved successfully');
-          return result;
-        } catch (error) {
-          errorHandler.handleError(error, { operation: 'sessionSave' });
-        }
-      };
-    }
+    // Enhance session management with safe wrapping
+    safeWrapFunction('saveSession', function(original) {
+      logger.info('Session save started');
+      try {
+        const result = original.call(this);
+        logger.info('Session saved successfully');
+        return result;
+      } catch (error) {
+        errorHandler.handleError(error, { operation: 'sessionSave' });
+        throw error;
+      }
+    });
 
-    if (window.loadSession) {
-      const originalLoadSession = window.loadSession;
-      window.loadSession = function() {
-        logger.info('Session load started');
-        try {
-          const result = originalLoadSession.call(this);
-          logger.info('Session loaded successfully');
-          return result;
-        } catch (error) {
-          errorHandler.handleError(error, { operation: 'sessionLoad' });
-        }
-      };
-    }
+    safeWrapFunction('loadSession', function(original) {
+      logger.info('Session load started');
+      try {
+        const result = original.call(this);
+        logger.info('Session loaded successfully');
+        return result;
+      } catch (error) {
+        errorHandler.handleError(error, { operation: 'sessionLoad' });
+        throw error;
+      }
+    });
+
+    safeWrapFunction('loadSessionFromFile', function(original, file) {
+      logger.info('Session file load started', { fileName: file?.name });
+      try {
+        const result = original.call(this, file);
+        logger.info('Session file loaded successfully');
+        return result;
+      } catch (error) {
+        errorHandler.handleError(error, { operation: 'sessionFileLoad' });
+        throw error;
+      }
+    });
 
     // Enhance validation
     if (window.updateValidation) {

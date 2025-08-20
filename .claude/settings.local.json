@@ -21,7 +21,20 @@
       "Bash(sed:*)",
       "Bash(npm:*)",
       "Bash(mv:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(timeout 30 npx playwright test tests/e2e/complete-workflows.spec.js -g \"should complete full applicant workflow\" --project=chromium --reporter=line --timeout=15000)",
+      "Bash(python:*)",
+      "Bash(timeout 30 npx playwright test:*)",
+      "Bash(timeout 60 npx playwright test:*)",
+      "Bash(grep:*)",
+      "Bash(timeout 40 npx playwright test tests/e2e/complete-workflows.spec.js -g \"should complete full respondent workflow\" --project=chromium --reporter=line --timeout=30000)",
+      "Bash(timeout 90 npx playwright test:*)",
+      "Bash(awk:*)",
+      "Bash(cat:*)",
+      "Bash(timeout 3 curl -s http://localhost:8080)",
+      "Bash(timeout:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx http-server:*)"
     ],
     "deny": [],
     "ask": []

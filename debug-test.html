@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <textarea id="chronology" placeholder="Test textarea"></textarea>
+    <div id="chronologyCounter" class="character-counter">0 characters</div>
+    
+    <script>
+        // Simple test to debug function availability
+        setTimeout(() => {
+            console.log('=== DEBUG TEST RESULTS ===');
+            console.log('window.appState:', typeof window.appState);
+            console.log('window.updateCharacterCount:', typeof window.updateCharacterCount);
+            console.log('window.init:', typeof window.init);
+            
+            if (typeof window.updateCharacterCount === 'function') {
+                console.log('Trying to call updateCharacterCount...');
+                try {
+                    window.updateCharacterCount('chronology', 'test text');
+                    console.log('Character counter after manual call:', document.getElementById('chronologyCounter').textContent);
+                } catch (e) {
+                    console.error('Error calling updateCharacterCount:', e);
+                }
+            }
+        }, 1000);
+    </script>
+    
+    <!-- Load the main app scripts -->
+    <script>
+        // Copy the main app initialization code
+        window.location.href = 'index.html?debug';
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JS Test</title>
+</head>
+<body>
+    <h1>JavaScript Test</h1>
+    <div id="test">Testing</div>
+    <script>
+        console.log('Script starting...');
+        
+        function testFunction() {
+            return 'test';
+        }
+        
+        window.testFunction = testFunction;
+        window.testVar = 'hello';
+        
+        console.log('Function assigned:', typeof window.testFunction);
+        console.log('Variable assigned:', window.testVar);
+    </script>
+</body>
+</html>

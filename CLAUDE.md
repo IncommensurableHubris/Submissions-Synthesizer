@@ -79,6 +79,40 @@ http://localhost:8080?debug
 window.debugLogger.enable()
 ```
 
+**E2E Test Debugging** (Updated 2025-08-19):
+```bash
+# Run single E2E test with debugging
+npx playwright test tests/e2e/complete-workflows.spec.js -g "applicant workflow" --debug
+
+# Run E2E with browser UI visible
+npx playwright test --headed --project=chromium
+
+# Test specific browser
+npx playwright test --project=firefox
+npx playwright test --project=webkit
+
+# Generate detailed test report
+npx playwright test --reporter=html
+```
+
+### Current E2E Testing Status
+
+⚠️ **Important Note**: E2E tests are currently in progress (40% complete)
+
+**Working**: 
+- ✅ JavaScript initialization 
+- ✅ Function accessibility in tests
+- ✅ Tab navigation
+- ✅ Character counters
+- ✅ Button interactions
+
+**Known Issues**:
+- ⚠️ State management (`appState` not updating during tests)
+- ⚠️ Form validation (requires manual button enabling)
+- ⚠️ File upload testing not yet implemented
+
+**Workarounds Available**: See `tasks/E2E_TEST_FIXES.md` for detailed solutions
+
 ### When to Run Tests
 
 **ALWAYS run tests**:

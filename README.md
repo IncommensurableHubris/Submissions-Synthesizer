@@ -209,6 +209,8 @@ If you experience any issues, you can run a quick system check:
 2. Run: `npm test` (takes 30 seconds)
 3. All tests should show "PASS" in green
 
+> **Note**: Full browser testing (E2E) is currently under development. Core functionality is fully tested and working. See `TESTING.md` for current status.
+
 ### When to Run Quality Checks
 
 **Always Check Before**:

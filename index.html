@@ -2289,6 +2289,7 @@ Begin your comprehensive analysis and drafting. Structure your response with cle
 
             return prompt;
         }
+        }
 
         // Enhanced Gemini prompt template with strategic hierarchy
         function generateGeminiPrompt() {
@@ -2568,6 +2569,7 @@ COMPLETENESS VERIFICATION:
 Proceed with strategic synthesis following all phases methodically. Your mission: transform bullet points into comprehensive, persuasive legal submission that ${isRespondent ? 'systematically defeats the relief sought' : 'compellingly establishes entitlement to relief'}. Use the template as your model for sophistication and depth. Ensure formal, precise legal language throughout. Structure your response with clear numbered sections and headings that match the template format.`;
 
             return prompt;
+        }
         }
 
         // Enhanced quality scoring system with anti-hallucination measures
@@ -3113,6 +3115,12 @@ Proceed with strategic synthesis following all phases methodically. Your mission
         window.switchPleadingsTab = switchPleadingsTab;
         window.init = init;
         
+        // Session management functions
+        window.loadSession = loadSession;
+        window.saveSession = saveSession;
+        window.loadSessionFromFile = loadSessionFromFile;
+        window.loadSessionData = loadSessionData;
+        
         // Test helper functions
         window.testMode = false; // Flag to enable test-specific behavior
         
@@ -3178,8 +3186,6 @@ Proceed with strategic synthesis following all phases methodically. Your mission
         } else {
             initializeApp();
         }
-    }
-}
     </script>
 
     <!-- Fallback appState initialization for test environments -->
@@ -3459,6 +3465,9 @@ Please analyze this legal matter and provide strategic recommendations.`;
                     console.log(`Copy button event listener attached for: ${key}`);
                 }
             });
+            
+            // Session button event listeners are already set up in main initialization (lines 1493-1495)
+            // No fallback handlers needed
             
             // Initialize default tab states with robust error handling
             const uploadTab = document.querySelector('.template-tab[data-tab="upload"]');

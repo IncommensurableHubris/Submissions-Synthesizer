@@ -1,0 +1,29 @@
+<script>
+console.log("Script start");
+let appState = { test: true };
+
+function init() {
+    console.log("Init called");
+}
+
+window.appState = appState;
+window.init = init;
+console.log("Functions exposed to window");
+
+function initializeApp() {
+    console.log("Initializing app");
+    init();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
+}
+    }
+}
+console.log("After extra braces");
+</script>
+<script>
+console.log("Second script - appState:", typeof window.appState);
+</script>
